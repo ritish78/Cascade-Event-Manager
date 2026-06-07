@@ -1,6 +1,7 @@
 services:
   eventmanagementbackend:
     container_name: eventmanagementbackend
+    restart: unless-stopped
     ports:
       - 5000:5000
     networks:
