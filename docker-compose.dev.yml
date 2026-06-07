@@ -1,0 +1,27 @@
+services:
+  eventmanagementbackend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+    env_file:
+      - ./backend/.env.development
+    volumes:
+      - ./backend:/home/eventmanagement
+      - /home/eventmanagement/node_modules
+    command: pnpm run dev
+
+  eventmanagementdatabase:
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-eventmanagement}
+      POSTGRES_USER: ${POSTGRES_USER:-rajeshhamal} #I am not Rajesh Hamal but using it as filler like John Doe
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password123}
+    ports:
+      - 5432:5432
+
+  eventmanagementadminer:
+    ports:
+      - 8080:8080

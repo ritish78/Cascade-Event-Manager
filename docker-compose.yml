@@ -1,0 +1,37 @@
+services:
+  eventmanagementbackend:
+    container_name: eventmanagementbackend
+    ports:
+      - 5000:5000
+    networks:
+      - eventmanagementnetwork
+    depends_on:
+      - eventmanagementdatabase
+
+  eventmanagementdatabase:
+    container_name: eventmanagementdatabase
+    image: postgres:18-alpine
+    restart: unless-stopped
+    ports:
+      - 5432:5432
+    volumes:
+      - eventmanagementdata:/var/lib/postgresql
+    networks:
+      - eventmanagementnetwork
+
+  eventmanagementadminer:
+    container_name: eventmanagementadminer
+    image: adminer:5.4.2
+    restart: unless-stopped
+    environment:
+      - ADMINER_DEFAULT_SERVER=eventmanagementdatabase
+    networks:
+      - eventmanagementnetwork
+    depends_on:
+      - eventmanagementdatabase
+
+networks:
+  eventmanagementnetwork:
+
+volumes:
+  eventmanagementdata:
