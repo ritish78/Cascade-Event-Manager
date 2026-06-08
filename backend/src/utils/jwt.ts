@@ -46,16 +46,16 @@ export const generateJWT = (userId: number, fullName: string) => {
 
 /**
  * @param token         string - acess token to verify
- * @returns             user: { id: string, fullName: string }
+ * @returns             user: { id: number, fullName: string }
  */
 export const verifyAccessToken = (token: string) => {
-  return jwt.verify(token, JWT_ACCESS_SECRET) as { user: { id: string; fullName: string } };
+  return jwt.verify(token, JWT_ACCESS_SECRET) as { user: { id: number; fullName: string } };
 };
 
 /**
  * @param token         string - acess token to verify
- * @returns             user: { id: string, fullName: string }
+ * @returns             user: { id: number, fullName: string }
  */
 export const verifyRefreshToken = (token: string) => {
-  return jwt.verify(token, JWT_REFRESH_SECRET) as { user: { id: string; fullName: string } };
+  return jwt.verify(token, JWT_REFRESH_SECRET) as { user: { id: number; fullName: string } };
 };
