@@ -1,0 +1,28 @@
+import dotenv from "dotenv";
+import { z } from "zod";
+
+dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
+
+const environmentVariablesSchema = z.object({
+  NODE_ENV: z.enum(["development", "production", "test"]),
+  EXPRESS_SERVER_PORT: z.string().trim().min(1),
+  POSTGRES_HOST: z.string().trim().min(1),
+  POSTGRES_DB: z.string().trim().min(1),
+  POSTGRES_USER: z.string().trim().min(1),
+  POSTGRES_PASSWORD: z.string().trim().min(1),
+  POSTGRES_DATA_URL: z.string().trim().min(1),
+});
+
+try {
+  environmentVariablesSchema.parse(process.env);
+} catch (error) {
+  throw new Error("Please provide all environment variables!");
+}
+
+type EnvSchemaType = z.infer<typeof environmentVariablesSchema>;
+
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv extends EnvSchemaType {}
+  }
+}
