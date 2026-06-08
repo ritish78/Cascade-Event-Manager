@@ -11,6 +11,8 @@ const environmentVariablesSchema = z.object({
   POSTGRES_USER: z.string().trim().min(1),
   POSTGRES_PASSWORD: z.string().trim().min(1),
   POSTGRES_DATA_URL: z.string().trim().min(1),
+  JWT_ACCESS_SECRET: z.string().trim().min(1),
+  JWT_REFRESH_SECRET: z.string().trim().min(1),
 });
 
 try {

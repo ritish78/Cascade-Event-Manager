@@ -21,6 +21,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.9.2",
     "@types/pg": "^8.20.0",
     "tsc": "^2.0.4",
@@ -28,9 +29,11 @@
     "typescript": "^6.0.3"
   },
   "dependencies": {
+    "argon2": "^0.44.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "helmet": "^8.2.0",
+    "jsonwebtoken": "^9.0.3",
     "knex": "^3.2.10",
     "pg": "^8.21.0",
     "zod": "^4.4.3"
