@@ -2,8 +2,16 @@
 
 # How to use:
 
+1.
+
 ```
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+```
+
+2.
+
+```
+docker exec -it eventmanagementbackend pnpm migrate:latest
 ```
 
 ### Resources used:
