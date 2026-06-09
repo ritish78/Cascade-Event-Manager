@@ -1,10 +1,15 @@
 import { NextFunction, Request, Response } from "express";
 import { ACCESS_TOKEN_COOKIE_OPTIONS, REFRESH_TOKEN_COOKIE_OPTIONS } from "src/config";
 import { loginSchema } from "src/schema/auth.schema";
-import { loginUser, refreshAccessToken } from "src/services/auth.services";
+import { loginUser, refreshAccessToken, revokeRefreshToken } from "src/services/auth.services";
 import { AuthError, BadRequestError } from "src/utils/error";
 
-export const login = async (req: Request, res: Response, next: NextFunction) => {
+/**
+ * @param req       Request object from express route
+ * @param res       Response object from express route
+ * @param next      NextFunction of express for middleware handling
+ */
+export const login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const result = loginSchema.safeParse(req.body);
 
@@ -23,7 +28,12 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
   }
 };
 
-export const refreshAccess = async (req: Request, res: Response, next: NextFunction) => {
+/**
+ * @param req       Request object from express route
+ * @param res       Response object from express route
+ * @param next      NextFunction of express for middleware handling
+ */
+export const refreshAccess = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const refreshToken = req.cookies?.refreshToken;
 
@@ -36,6 +46,30 @@ export const refreshAccess = async (req: Request, res: Response, next: NextFunct
     res.cookie("accessToken", accessToken, ACCESS_TOKEN_COOKIE_OPTIONS);
 
     res.status(200).send({ message: "Access Token refreshed!" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @param req       Request object from express route
+ * @param res       Response object from express route
+ * @param next      NextFunction of express for middleware handling
+ */
+export const logout = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const refreshToken = req.cookies?.refreshToken;
+
+    if (refreshToken) {
+      //we need to remove it from our database as well so that we don't generate
+      //new access token for user using already logged out refresh token
+      await revokeRefreshToken(refreshToken);
+    }
+
+    res.clearCookie("accessToken", ACCESS_TOKEN_COOKIE_OPTIONS);
+    res.clearCookie("refreshToken", REFRESH_TOKEN_COOKIE_OPTIONS);
+
+    res.status(200).send({ message: "Logged out successfully!" });
   } catch (error) {
     next(error);
   }
