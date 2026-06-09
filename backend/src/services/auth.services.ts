@@ -10,6 +10,7 @@ import { passwordMatches } from "src/utils/hashPassword";
 import { generateAccessToken, generateJWT, verifyRefreshToken } from "src/utils/jwt";
 import argon2 from "argon2";
 import { RefreshToken } from "src/types/refreshToken.types";
+import { PublicUser } from "src/types/user.types";
 
 /**
  * @param email         string - email provided by the user
@@ -60,7 +61,9 @@ export const loginUser = async (email: string, password: string) => {
  * @param refreshToken      string - refresh token of user
  * @returns                 Promise - accessToken - string
  */
-export const refreshAccessToken = async (refreshToken: string): Promise<{ accessToken: string }> => {
+export const refreshAccessToken = async (
+  refreshToken: string,
+): Promise<{ accessToken: string; user: PublicUser }> => {
   let payload: { user: { id: number; fullName: string } };
 
   try {
@@ -102,7 +105,16 @@ export const refreshAccessToken = async (refreshToken: string): Promise<{ access
     throw new NotFoundError("User not found!");
   }
 
-  return { accessToken: generateAccessToken(payload.user.id, userExistsInOurDatabase.full_name) };
+  return {
+    accessToken: generateAccessToken(payload.user.id, userExistsInOurDatabase.full_name),
+    user: {
+      id: userExistsInOurDatabase.id,
+      full_name: userExistsInOurDatabase.full_name,
+      email: userExistsInOurDatabase.email,
+      is_verified: userExistsInOurDatabase.is_verified,
+      is_active: userExistsInOurDatabase.is_active,
+    },
+  };
 };
 
 /**

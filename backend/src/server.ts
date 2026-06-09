@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import helmet from "helmet";
+import cookies from "cookie-parser";
 import { errorHandler } from "./middleware/errorHandler.middleware";
 import authRoute from "./routes/auth.route";
 
@@ -9,6 +10,7 @@ app.disable("x-powered-by");
 
 app.use(helmet());
 app.use(express.json());
+app.use(cookies());
 
 app.get("/api/v1/ping", (req: Request, res: Response) => {
   return res.status(200).json({ message: "Pong!" });

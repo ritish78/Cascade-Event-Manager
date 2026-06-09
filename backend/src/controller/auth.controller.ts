@@ -13,12 +13,25 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
   try {
     const userInput: LoginInput = loginSchema.parse(req.body);
 
+    //First, lets see if the user is already logged in and has refreshToken
+    //We don't need to check for accessToken as we will generate new one
+    const existingRefreshToken = req.cookies?.refreshToken;
+
+    if (existingRefreshToken) {
+      const { accessToken, user } = await refreshAccessToken(existingRefreshToken);
+
+      res.cookie("accessToken", accessToken, ACCESS_TOKEN_COOKIE_OPTIONS);
+
+      res.status(200).send({ message: "Already logged in!", user });
+      return;
+    }
+
     const { accessToken, refreshToken, user } = await loginUser(userInput.email, userInput.password);
 
     res.cookie("accessToken", accessToken, ACCESS_TOKEN_COOKIE_OPTIONS);
     res.cookie("refreshToken", refreshToken, REFRESH_TOKEN_COOKIE_OPTIONS);
 
-    res.status(200).send(user);
+    res.status(200).send({ message: "Logged in!", user });
   } catch (error) {
     next(error);
   }
