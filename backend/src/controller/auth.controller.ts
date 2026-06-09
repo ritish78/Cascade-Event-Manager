@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { ACCESS_TOKEN_COOKIE_OPTIONS, REFRESH_TOKEN_COOKIE_OPTIONS } from "src/config";
-import { loginSchema } from "src/schema/auth.schema";
+import { LoginInput, loginSchema } from "src/schema/auth.schema";
 import { loginUser, refreshAccessToken, revokeRefreshToken } from "src/services/auth.services";
 import { AuthError, BadRequestError } from "src/utils/error";
 
@@ -11,18 +11,14 @@ import { AuthError, BadRequestError } from "src/utils/error";
  */
 export const login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const result = loginSchema.safeParse(req.body);
+    const userInput: LoginInput = loginSchema.parse(req.body);
 
-    if (!result.success) {
-      throw new BadRequestError("Invalid Request Body!");
-    }
-
-    const { accessToken, refreshToken, user } = await loginUser(result.data.email, result.data.password);
+    const { accessToken, refreshToken, user } = await loginUser(userInput.email, userInput.password);
 
     res.cookie("accessToken", accessToken, ACCESS_TOKEN_COOKIE_OPTIONS);
     res.cookie("refreshToken", refreshToken, REFRESH_TOKEN_COOKIE_OPTIONS);
 
-    res.status(200).send({ user });
+    res.status(200).send(user);
   } catch (error) {
     next(error);
   }

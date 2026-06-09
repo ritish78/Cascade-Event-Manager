@@ -9,6 +9,10 @@ const knexConfig: { [key: string]: Knex.Config } = {
       directory: "./src/db/migrations",
       extension: "ts",
     },
+    seeds: {
+      directory: "./src/db/seeds",
+      extension: "ts",
+    },
     pool: {
       min: 2,
       max: 10,

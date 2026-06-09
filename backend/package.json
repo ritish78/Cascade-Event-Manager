@@ -10,7 +10,9 @@
     "typecheck": "tsc --noEmit",
     "migrate:latest": "tsx node_modules/knex/bin/cli.js --knexfile knexfile.ts migrate:latest",
     "migrate:rollback": "tsx node_modules/knex/bin/cli.js --knexfile knexfile.ts migrate:rollback",
-    "migrate:make": "tsx node_modules/knex/bin/cli.js --knexfile knexfile.ts migrate:make"
+    "migrate:make": "tsx node_modules/knex/bin/cli.js --knexfile knexfile.ts migrate:make",
+    "seed:make": "tsx node_modules/knex/bin/cli.js --knexfile knexfile.ts seed:make",
+    "seed:run": "tsx node_modules/knex/bin/cli.js --knexfile knexfile.ts seed:run"
   },
   "keywords": [
     "event",
