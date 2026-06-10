@@ -9,7 +9,7 @@ import { verifyAccessToken } from "src/utils/jwt";
  */
 export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const accessToken = req.cookies?.refreshToken;
+    const accessToken = req.cookies?.accessToken;
 
     if (!accessToken) {
       throw new AuthError("Access token was not provided!");

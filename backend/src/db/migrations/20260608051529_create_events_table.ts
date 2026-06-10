@@ -11,7 +11,7 @@ export async function up(knex: Knex): Promise<void> {
     //https://knexjs.org/guide/schema-builder.html#intable
     table
       .integer("created_by")
-      .notNullable()
+      .nullable()
       .references("id")
       .inTable("users")
       .onDelete("SET NULL") //when a user is deleted, we don't want to delete events created by them

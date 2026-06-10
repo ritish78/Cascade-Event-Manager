@@ -3,6 +3,7 @@ import helmet from "helmet";
 import cookies from "cookie-parser";
 import { errorHandler } from "./middleware/errorHandler.middleware";
 import authRoute from "./routes/auth.route";
+import eventRoute from "./routes/event.route";
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.get("/api/v1/ping", (req: Request, res: Response) => {
 });
 
 app.use("/api/v1/auth", authRoute);
+app.use("/api/v1/events", eventRoute);
 
 app.use(errorHandler);
 
