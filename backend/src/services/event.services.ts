@@ -3,9 +3,36 @@ import {
   insertEvent,
   insertEventMember,
   insertEventTags,
+  insertEventWithMembersAndTags,
 } from "src/repository/event.repository";
 import { NotFoundError } from "src/utils/error";
 import { Event } from "src/types/event.types";
+
+export const createNewEvent = async (
+  userId: number,
+  eventName: string,
+  eventDescription: string,
+  eventLocation: string,
+  isPrivate: Boolean = false,
+  categoryId: number,
+  eventDate: Date,
+  invitedBy: number,
+  status: string,
+  tagIds: number[] = [],
+) => {
+  return insertEventWithMembersAndTags(
+    userId,
+    eventName,
+    eventDescription,
+    eventLocation,
+    isPrivate,
+    categoryId,
+    eventDate,
+    invitedBy,
+    status,
+    tagIds,
+  );
+};
 
 /**
  * @param userId                number - id of the user who created the event
@@ -16,6 +43,9 @@ import { Event } from "src/types/event.types";
  * @param categoryId            number - id of the category of event
  * @param eventDate             Date - date of the event
  * @returns                     Event that is added
+ * This is the previous one without using transaction. A newer function is created above
+ * createNewEvent which does exactly this using transactions.
+ * @deprecated
  */
 export const createEvent = async (
   userId: number,

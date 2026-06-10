@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { CreateEventInput, createEventSchema } from "src/schema/event.schema";
-import { createEvent } from "src/services/event.services";
+import { createEvent, createNewEvent } from "src/services/event.services";
 import { AuthError } from "src/utils/error";
 
 /**
@@ -18,7 +18,18 @@ export const createEventController = async (req: Request, res: Response, next: N
       throw new AuthError("Missing tokens! Login in first!");
     }
 
-    const event = await createEvent(
+    // const event = await createEvent(
+    //   req.user.id,
+    //   userInput.name,
+    //   userInput.description,
+    //   userInput.location,
+    //   userInput.isPrivate,
+    //   userInput.categoryId,
+    //   userInput.eventDate,
+    //   userInput.tags || [],
+    // );
+
+    const event = await createNewEvent(
       req.user.id,
       userInput.name,
       userInput.description,
@@ -26,7 +37,9 @@ export const createEventController = async (req: Request, res: Response, next: N
       userInput.isPrivate,
       userInput.categoryId,
       userInput.eventDate,
-      userInput.tags || [],
+      req.user.id,
+      "accepted",
+      userInput.tags,
     );
 
     res.status(201).send({ message: `Event created of id ${event.id}` });
