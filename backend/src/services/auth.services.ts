@@ -1,4 +1,5 @@
 import {
+  addUser,
   findUserByEmail,
   findUserById,
   getActiveRefreshTokens,
@@ -6,7 +7,7 @@ import {
   revokeTokenById,
 } from "src/repository/auth.repository";
 import { AuthError, BadRequestError, ForbiddenError, NotFoundError } from "src/utils/error";
-import { passwordMatches } from "src/utils/hashPassword";
+import hashPassword, { passwordMatches } from "src/utils/hashPassword";
 import { generateAccessToken, generateJWT, verifyRefreshToken } from "src/utils/jwt";
 import argon2 from "argon2";
 import { RefreshToken } from "src/types/refreshToken.types";
@@ -17,7 +18,10 @@ import { PublicUser } from "src/types/user.types";
  * @param password      string - password in plain text provided by user
  * @returns             Promise - JWT and user credentials
  */
-export const loginUser = async (email: string, password: string) => {
+export const loginUser = async (
+  email: string,
+  password: string,
+): Promise<{ accessToken: string; refreshToken: string; user: PublicUser }> => {
   const user = await findUserByEmail(email);
 
   if (!user) {
@@ -41,6 +45,15 @@ export const loginUser = async (email: string, password: string) => {
     throw new AuthError("Invalid Credentials!");
   }
 
+  //We are generating new JWT and storing refresh tokens in our table in the below two lines
+  //If a user is logged in and has accessToken and refreshToken, and they clear cookies and sends
+  //new POST request for login, new accessToken and refreshToken is created.
+  //New row of refreshToken is also added to database even if the previous one did not expire.
+  //This is the expected behavior at the current stage. We could implement tracking based on
+  //device or user agent and send the previous refreshToken in the cookies back to the client.
+  //Or, we could also revoke previous refreshTokens. But, user could be logged in with different
+  //browsers or even devices and it will revoke their other logins.
+
   const tokens = generateJWT(user.id, user.full_name);
 
   await insertRefreshToken(user.id, tokens.refreshToken);
@@ -49,10 +62,10 @@ export const loginUser = async (email: string, password: string) => {
     ...tokens,
     user: {
       id: user.id,
-      fullName: user.full_name,
+      full_name: user.full_name,
       email: user.email,
-      isVerified: user.is_verified,
-      isActive: user.is_active,
+      is_verified: user.is_verified,
+      is_active: user.is_active,
     },
   };
 };
@@ -144,4 +157,32 @@ export const revokeRefreshToken = async (refreshToken: string): Promise<void> =>
       await revokeTokenById(token.id);
     }
   }
+};
+
+/**
+ * @param fullName              string -full name of the user who is registering
+ * @param email                 string - email of the user
+ * @param password              string - password in plain text provided by user
+ * @param confirmPassword       string - confirmPassword in plain text
+ */
+export const registerUser = async (
+  fullName: string,
+  email: string,
+  password: string,
+  confirmPassword: string,
+): Promise<void> => {
+  if (password.trim() !== confirmPassword.trim()) {
+    throw new BadRequestError("Mismatch Password!");
+  }
+
+  //After checking if provided passwords match then only we are checking if user exists in our database.
+  const user = await findUserByEmail(email);
+
+  if (user) {
+    throw new BadRequestError("User is already registered! Login in instead!");
+  }
+
+  const hashedPassword = await hashPassword(password.trim());
+
+  await addUser(fullName.trim(), email.trim(), hashedPassword);
 };

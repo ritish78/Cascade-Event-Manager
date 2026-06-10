@@ -59,3 +59,12 @@ export const getActiveRefreshTokens = async (id: number): Promise<RefreshToken[]
 export const revokeTokenById = async (tokenId: number): Promise<void> => {
   await db("refresh_tokens").where({ id: tokenId }).update({ revoked: true });
 };
+
+/**
+ * @param fullName      string - name of the user to register
+ * @param email         string - email of the user
+ * @param password      string - hashed password of the provided password
+ */
+export const addUser = async (fullName: string, email: string, password: string) => {
+  await db("users").insert({ full_name: fullName, email: email, password: password });
+};

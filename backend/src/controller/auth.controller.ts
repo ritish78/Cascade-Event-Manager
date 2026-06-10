@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { ACCESS_TOKEN_COOKIE_OPTIONS, REFRESH_TOKEN_COOKIE_OPTIONS } from "src/config";
-import { LoginInput, loginSchema } from "src/schema/auth.schema";
-import { loginUser, refreshAccessToken, revokeRefreshToken } from "src/services/auth.services";
+import { LoginInput, loginSchema, RegisterInput, registerSchema } from "src/schema/auth.schema";
+import { loginUser, refreshAccessToken, registerUser, revokeRefreshToken } from "src/services/auth.services";
 import { AuthError, BadRequestError } from "src/utils/error";
 
 /**
@@ -18,12 +18,21 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
     const existingRefreshToken = req.cookies?.refreshToken;
 
     if (existingRefreshToken) {
-      const { accessToken, user } = await refreshAccessToken(existingRefreshToken);
+      //implementing try catch block inside another as refreshAccessToken throws
+      //AuthError if validToken is not provided. When the user is logging in, we
+      //need to create new create new Refresh Token. So, catch block clears the
+      //cookie and we use loginUser function again to set tokens in cookies
+      try {
+        const { accessToken, user } = await refreshAccessToken(existingRefreshToken);
 
-      res.cookie("accessToken", accessToken, ACCESS_TOKEN_COOKIE_OPTIONS);
+        res.cookie("accessToken", accessToken, ACCESS_TOKEN_COOKIE_OPTIONS);
 
-      res.status(200).send({ message: "Already logged in!", user });
-      return;
+        res.status(200).send({ message: "Already logged in!", user });
+        return;
+      } catch (error) {
+        res.clearCookie("accessToken", ACCESS_TOKEN_COOKIE_OPTIONS);
+        res.clearCookie("refreshToken", REFRESH_TOKEN_COOKIE_OPTIONS);
+      }
     }
 
     const { accessToken, refreshToken, user } = await loginUser(userInput.email, userInput.password);
@@ -79,6 +88,23 @@ export const logout = async (req: Request, res: Response, next: NextFunction): P
     res.clearCookie("refreshToken", REFRESH_TOKEN_COOKIE_OPTIONS);
 
     res.status(200).send({ message: "Logged out successfully!" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @param req       Request object from express route
+ * @param res       Response object from express route
+ * @param next      NextFunction of express for middleware handling
+ */
+export const register = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userInput: RegisterInput = registerSchema.parse(req.body);
+
+    await registerUser(userInput.fullName, userInput.email, userInput.password, userInput.confirmPassword);
+
+    res.status(201).send({ message: "Registered successfully!" });
   } catch (error) {
     next(error);
   }
