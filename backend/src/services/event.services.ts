@@ -1,5 +1,6 @@
 import {
   findEventById,
+  findPastEvents,
   findUpcomingEvents,
   insertEvent,
   insertEventMember,
@@ -95,6 +96,22 @@ export const getEventById = async (eventId: number): Promise<Event> => {
   return event;
 };
 
+/**
+ * @param userId                number | null - id of the user who might be logged in. if not logged in, we only display not private events
+ * @param limit                 number - number of events to fetch
+ * @param page                  number - number of pages that we are in
+ * @returns
+ */
 export const getUpcomingEvents = async (userId: number | null, limit: number, page: number) => {
   return findUpcomingEvents(userId, limit, page);
+};
+
+/**
+ * @param userId                number | null - id of the user who might be logged in. if not logged in, we only display not private events
+ * @param limit                 number - number of events to fetch
+ * @param page                  number - number of pages that we are in
+ * @returns
+ */
+export const getPastEvents = async (userId: number | null, limit: number, page: number) => {
+  return findPastEvents(userId, limit, page);
 };

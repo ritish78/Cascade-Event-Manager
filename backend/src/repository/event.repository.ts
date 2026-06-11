@@ -136,7 +136,19 @@ export const findEventById = async (eventId: number, trx: QueryBuilder = db): Pr
   return eventFromDatabase ?? null;
 };
 
-export const findUpcomingEvents = async (userId: number | null, limit: number, page: number) => {
+/**
+ * @param userId                number | null - id of the user who might be logged in. if not logged in, we only display not private events
+ * @param limit                 number - number of events to fetch
+ * @param page                  number - number of pages that we are in
+ * @param upcoming              boolean - default true - true if we want results for future events. false if past.
+ * @returns
+ */
+const buildEventsFutureOrPastQuery = (
+  userId: number | null,
+  limit: number,
+  page: number,
+  upcoming: boolean = true,
+) => {
   const offset = (page - 1) * limit;
   /**
    * The SQL query that I want to implement:
@@ -184,9 +196,7 @@ export const findUpcomingEvents = async (userId: number | null, limit: number, p
         Execution Time: 0.489 ms
    */
 
-  console.log("user id received:", userId);
-
-  const query = db("events as e")
+  return db("events as e")
     .join("users as u", "e.created_by", "u.id")
     .leftJoin("categories as c", "c.id", "e.category_id")
     .select(
@@ -197,11 +207,12 @@ export const findUpcomingEvents = async (userId: number | null, limit: number, p
       "e.is_private",
       "e.event_date",
       "e.created_at",
-      "u.full_name as creator_name",
-      "c.id as category_id",
-      "c.name as category_name",
+      "u.full_name AS creator_name",
+      "c.id AS category_id",
+      "c.name AS category_name",
+      db.raw("COUNT(*) OVER() AS events_count"),
     )
-    .where("e.event_date", ">=", db.raw("CURRENT_DATE"))
+    .where("e.event_date", upcoming ? ">=" : "<", db.raw("CURRENT_DATE"))
     .where((builder) => {
       builder.where("e.is_private", false);
 
@@ -214,13 +225,33 @@ export const findUpcomingEvents = async (userId: number | null, limit: number, p
         );
       }
     })
-    .orderBy("e.event_date", "asc")
+    .orderBy("e.event_date", upcoming ? "asc" : "desc")
     .limit(limit)
     .offset(offset);
+};
 
-  console.log(query.toSQL().toNative());
+/**
+ * @param userId                number | null - id of the user who might be logged in. if not logged in, we only display not private events
+ * @param limit                 number - number of events to fetch
+ * @param page                  number - number of pages that we are in
+ * @returns
+ */
+export const findUpcomingEvents = async (userId: number | null, limit: number, page: number) => {
+  const events = await buildEventsFutureOrPastQuery(userId, limit, page);
+  const totalEvents = Number(events[0]?.events_count ?? 0);
 
-  const events = await query;
+  return { totalEvents, page, limit, totalPages: Math.ceil(totalEvents / limit), events };
+};
 
-  return { events };
+/**
+ * @param userId                number | null - id of the user who might be logged in. if not logged in, we only display not private events
+ * @param limit                 number - number of events to fetch
+ * @param page                  number - number of pages that we are in
+ * @returns
+ */
+export const findPastEvents = async (userId: number | null, limit: number, page: number) => {
+  const events = await buildEventsFutureOrPastQuery(userId, limit, page, false);
+  const totalEvents = Number(events[0]?.events_count ?? 0);
+
+  return { totalEvents, page, limit, totalPages: Math.ceil(totalEvents / limit), events };
 };
