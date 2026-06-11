@@ -1,6 +1,7 @@
 import db from "src/db";
 import { Event } from "../types/event.types";
 import { Knex } from "knex";
+import { email } from "zod";
 
 type QueryBuilder = Knex.Transaction | Knex;
 
@@ -133,4 +134,93 @@ export const findEventById = async (eventId: number, trx: QueryBuilder = db): Pr
   const eventFromDatabase = await trx<Event>("events").where({ id: eventId }).first();
 
   return eventFromDatabase ?? null;
+};
+
+export const findUpcomingEvents = async (userId: number | null, limit: number, page: number) => {
+  const offset = (page - 1) * limit;
+  /**
+   * The SQL query that I want to implement:
+   * 
+   SELECT e.id AS event_id, e.name AS event_name, e.description, e.location, e.is_private, e.created_by AS creator_id, e.category_id, e.event_date, 
+        u.full_name AS creator_name,
+        c.id AS category_id, c.name AS category_name
+    FROM EVENTS e
+    INNER JOIN users as u 
+    ON e.created_by = u.id 
+    LEFT JOIN categories as c ON c.id = e.category_id
+    LEFT JOIN event_members AS em ON em.event_id = e.id
+    WHERE event_date >= CURRENT_DATE 
+    AND (em.user_id = 8 OR e.is_private = false)
+    ORDER BY e.event_date ASC;
+
+    Planning:
+        Buffers: shared hit=334
+        Planning Time: 4.887 ms
+        Execution Time: 0.917 ms
+
+
+    * And since, we are not selecting anything from the joined event_members table, we could
+    * use EXISTS to make it faster. There could be many many members for a particular event
+    * and we don't want Postgres to create JOINS for each row as it would take a bit of time
+    * and resources. We just want to check if the user is a part of the event, i.e. in
+    * event_members table, does the current user's id (event_members.user_id) here as em.user_id
+    * exists for the current logged in user. We don't care about other user_id for the same event
+    
+    
+    SELECT e.id AS event_id, e.name AS event_name, e.description, e.location, e.is_private, e.created_by AS creator_id, e.category_id, e.event_date, 
+        u.full_name AS creator_name,
+        c.id AS category_id, c.name AS category_name
+    FROM EVENTS e
+    INNER JOIN users as u 
+    ON e.created_by = u.id 
+    LEFT JOIN categories as c ON c.id = e.category_id
+    WHERE event_date >= CURRENT_DATE 
+    AND (e.is_private = false OR EXISTS (SELECT 1 FROM event_members em WHERE em.event_id = e.id AND em.user_id = 7))
+    ORDER BY e.event_date ASC;
+
+    Planning:
+        Buffers: shared hit=327
+        Planning Time: 4.850 ms
+        Execution Time: 0.489 ms
+   */
+
+  console.log("user id received:", userId);
+
+  const query = db("events as e")
+    .join("users as u", "e.created_by", "u.id")
+    .leftJoin("categories as c", "c.id", "e.category_id")
+    .select(
+      "e.id AS event_id",
+      "e.name AS event_name",
+      "e.description",
+      "e.location",
+      "e.is_private",
+      "e.event_date",
+      "e.created_at",
+      "u.full_name as creator_name",
+      "c.id as category_id",
+      "c.name as category_name",
+    )
+    .where("e.event_date", ">=", db.raw("CURRENT_DATE"))
+    .where((builder) => {
+      builder.where("e.is_private", false);
+
+      if (userId) {
+        builder.orWhereExists(
+          db("event_members as em")
+            .where("em.event_id", db.ref("e.id"))
+            .where("em.user_id", userId)
+            .select(db.raw("1")),
+        );
+      }
+    })
+    .orderBy("e.event_date", "asc")
+    .limit(limit)
+    .offset(offset);
+
+  console.log(query.toSQL().toNative());
+
+  const events = await query;
+
+  return { events };
 };

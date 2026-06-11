@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { CreateEventInput, createEventSchema } from "src/schema/event.schema";
-import { createEvent, createNewEvent } from "src/services/event.services";
+import { createEvent, createNewEvent, getUpcomingEvents } from "src/services/event.services";
 import { AuthError } from "src/utils/error";
 
 /**
@@ -46,4 +46,15 @@ export const createEventController = async (req: Request, res: Response, next: N
   } catch (error) {
     next(error);
   }
+};
+
+export const upcomingEvents = async (req: Request, res: Response, next: NextFunction) => {
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+
+  const userId = req.user?.id ?? null;
+
+  const events = await getUpcomingEvents(userId, limit, page);
+
+  res.status(200).send(events);
 };

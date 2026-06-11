@@ -1,5 +1,6 @@
 import {
   findEventById,
+  findUpcomingEvents,
   insertEvent,
   insertEventMember,
   insertEventTags,
@@ -92,4 +93,8 @@ export const getEventById = async (eventId: number): Promise<Event> => {
   }
 
   return event;
+};
+
+export const getUpcomingEvents = async (userId: number | null, limit: number, page: number) => {
+  return findUpcomingEvents(userId, limit, page);
 };
