@@ -1,7 +1,13 @@
 import { Request, Response, NextFunction } from "express";
 import { CreateEventInput, createEventSchema } from "src/schema/event.schema";
-import { createEvent, createNewEvent, getPastEvents, getUpcomingEvents } from "src/services/event.services";
-import { AuthError } from "src/utils/error";
+import {
+  createEvent,
+  createNewEvent,
+  getEventWithDetailsById,
+  getPastEvents,
+  getUpcomingEvents,
+} from "src/services/event.services";
+import { AuthError, BadRequestError, NotFoundError } from "src/utils/error";
 
 /**
  * @param req       Request object from express route
@@ -57,6 +63,10 @@ export const upcomingEvents = async (req: Request, res: Response, next: NextFunc
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 10;
 
+  if (!isNaN(page) || isNaN(limit)) {
+    throw new BadRequestError("Invalid request query provided!");
+  }
+
   const userId = req.user?.id ?? null;
 
   const events = await getUpcomingEvents(userId, limit, page);
@@ -73,9 +83,37 @@ export const pastEvents = async (req: Request, res: Response) => {
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 10;
 
+  if (!isNaN(page) || isNaN(limit)) {
+    throw new BadRequestError("Invalid request query provided!");
+  }
+
   const userId = req.user?.id ?? null;
 
   const events = await getPastEvents(userId, limit, page);
 
   res.status(200).send(events);
+};
+
+/**
+ * @param req       Request object from express route
+ * @param res       Response object from express route
+ * @param next      NextFunction of express for middleware handling
+ */
+export const eventById = async (req: Request, res: Response) => {
+  const userId = req.user?.id ?? null;
+  const eventId = Number(req.params.id);
+
+  if (!eventId || isNaN(eventId)) {
+    throw new BadRequestError("Invalid Event ID provided!");
+  }
+
+  const event = await getEventWithDetailsById(eventId, userId);
+
+  if (!event) {
+    throw new NotFoundError(
+      `You don't have the permission to view the event or the event of id ${eventId} does not exists!`,
+    );
+  }
+
+  res.status(200).send(event);
 };

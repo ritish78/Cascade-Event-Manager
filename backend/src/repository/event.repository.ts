@@ -1,5 +1,5 @@
 import db from "src/db";
-import { Event } from "../types/event.types";
+import { Event, EventDetails, EventRow, PaginatedEvents } from "../types/event.types";
 import { Knex } from "knex";
 import { email } from "zod";
 
@@ -236,8 +236,12 @@ const buildEventsFutureOrPastQuery = (
  * @param page                  number - number of pages that we are in
  * @returns
  */
-export const findUpcomingEvents = async (userId: number | null, limit: number, page: number) => {
-  const events = await buildEventsFutureOrPastQuery(userId, limit, page);
+export const findUpcomingEvents = async (
+  userId: number | null,
+  limit: number,
+  page: number,
+): Promise<PaginatedEvents> => {
+  const events: EventRow[] = await buildEventsFutureOrPastQuery(userId, limit, page);
   const totalEvents = Number(events[0]?.events_count ?? 0);
 
   return { totalEvents, page, limit, totalPages: Math.ceil(totalEvents / limit), events };
@@ -249,9 +253,52 @@ export const findUpcomingEvents = async (userId: number | null, limit: number, p
  * @param page                  number - number of pages that we are in
  * @returns
  */
-export const findPastEvents = async (userId: number | null, limit: number, page: number) => {
-  const events = await buildEventsFutureOrPastQuery(userId, limit, page, false);
+export const findPastEvents = async (
+  userId: number | null,
+  limit: number,
+  page: number,
+): Promise<PaginatedEvents> => {
+  const events: EventRow[] = await buildEventsFutureOrPastQuery(userId, limit, page, false);
   const totalEvents = Number(events[0]?.events_count ?? 0);
 
   return { totalEvents, page, limit, totalPages: Math.ceil(totalEvents / limit), events };
+};
+
+/**
+ * @param eventId               number - id of the event to fetch details
+ * @param userId                number | null - id of the user if logged in
+ * @returns
+ */
+export const findEventDetailsById = async (eventId: number, userId: number | null): Promise<EventDetails> => {
+  const event = await db("events as e")
+    .join("users as u", "e.created_by", "u.id")
+    .leftJoin("categories as c", "c.id", "e.category_id")
+    .select(
+      "e.id AS event_id",
+      "e.name AS event_name",
+      "e.description",
+      "e.location",
+      "e.is_private",
+      "e.event_date",
+      "e.created_at",
+      "u.full_name AS creator_name",
+      "c.id AS category_id",
+      "c.name AS category_name",
+    )
+    .where("e.id", eventId)
+    .where((builder) => {
+      builder.where("e.is_private", false);
+
+      if (userId) {
+        builder.orWhereExists(
+          db("event_members as em")
+            .where("em.event_id", db.ref("e.id"))
+            .where("em.user_id", userId)
+            .select(db.raw("1")),
+        );
+      }
+    })
+    .first();
+
+  return event ?? null;
 };

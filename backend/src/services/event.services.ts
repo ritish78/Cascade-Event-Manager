@@ -1,5 +1,6 @@
 import {
   findEventById,
+  findEventDetailsById,
   findPastEvents,
   findUpcomingEvents,
   insertEvent,
@@ -8,7 +9,7 @@ import {
   insertEventWithMembersAndTags,
 } from "src/repository/event.repository";
 import { NotFoundError } from "src/utils/error";
-import { Event } from "src/types/event.types";
+import { Event, EventDetails, PaginatedEvents } from "src/types/event.types";
 
 export const createNewEvent = async (
   userId: number,
@@ -102,7 +103,11 @@ export const getEventById = async (eventId: number): Promise<Event> => {
  * @param page                  number - number of pages that we are in
  * @returns
  */
-export const getUpcomingEvents = async (userId: number | null, limit: number, page: number) => {
+export const getUpcomingEvents = async (
+  userId: number | null,
+  limit: number,
+  page: number,
+): Promise<PaginatedEvents> => {
   return findUpcomingEvents(userId, limit, page);
 };
 
@@ -112,6 +117,19 @@ export const getUpcomingEvents = async (userId: number | null, limit: number, pa
  * @param page                  number - number of pages that we are in
  * @returns
  */
-export const getPastEvents = async (userId: number | null, limit: number, page: number) => {
+export const getPastEvents = async (
+  userId: number | null,
+  limit: number,
+  page: number,
+): Promise<PaginatedEvents> => {
   return findPastEvents(userId, limit, page);
+};
+
+export const getEventWithDetailsById = async (
+  eventId: number,
+  userId: number | null,
+): Promise<EventDetails> => {
+  const event = await findEventDetailsById(eventId, userId);
+
+  return event;
 };
