@@ -5,9 +5,9 @@ import { loginUser, refreshAccessToken, registerUser, revokeRefreshToken } from 
 import { AuthError, BadRequestError } from "src/utils/error";
 
 /**
- * @param req       Request object from express route
- * @param res       Response object from express route
- * @param next      NextFunction of express for middleware handling
+ * @route           /api/v1/auth/login
+ * @method          POST
+ * @access          Public
  */
 export const login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -47,9 +47,9 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
 };
 
 /**
- * @param req       Request object from express route
- * @param res       Response object from express route
- * @param next      NextFunction of express for middleware handling
+ * @route           /api/v1/auth/refresh
+ * @method          POST
+ * @access          Autheticated
  */
 export const refreshAccess = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -70,9 +70,9 @@ export const refreshAccess = async (req: Request, res: Response, next: NextFunct
 };
 
 /**
- * @param req       Request object from express route
- * @param res       Response object from express route
- * @param next      NextFunction of express for middleware handling
+ * @route           /api/v1/auth/logout
+ * @method          POST
+ * @access          Autheticated
  */
 export const logout = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -94,9 +94,9 @@ export const logout = async (req: Request, res: Response, next: NextFunction): P
 };
 
 /**
- * @param req       Request object from express route
- * @param res       Response object from express route
- * @param next      NextFunction of express for middleware handling
+ * @route           /api/v1/auth/register
+ * @method          POST
+ * @access          Public
  */
 export const register = async (req: Request, res: Response, next: NextFunction) => {
   try {

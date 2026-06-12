@@ -1,4 +1,5 @@
 import {
+  deleteEventById,
   findEventById,
   findEventDetailsById,
   findPastEvents,
@@ -8,7 +9,7 @@ import {
   insertEventTags,
   insertEventWithMembersAndTags,
 } from "src/repository/event.repository";
-import { NotFoundError } from "src/utils/error";
+import { ForbiddenError, NotFoundError } from "src/utils/error";
 import { Event, EventDetails, PaginatedEvents } from "src/types/event.types";
 
 export const createNewEvent = async (
@@ -132,4 +133,22 @@ export const getEventWithDetailsById = async (
   const event = await findEventDetailsById(eventId, userId);
 
   return event;
+};
+
+export const deleteEvent = async (eventId: number, userId: number) => {
+  try {
+    const event = await getEventById(eventId);
+
+    if (event.created_by !== userId) {
+      throw new ForbiddenError("User is not allowed to delete other's event!");
+    }
+
+    await deleteEventById(eventId);
+  } catch (error) {
+    //getEventById already throws error if event is not found but we want to have
+    //same error message when there is no event or the user does not have permission
+    throw new NotFoundError(
+      `You don't have permission to delete the event or the event of id ${eventId} does not exists!`,
+    );
+  }
 };

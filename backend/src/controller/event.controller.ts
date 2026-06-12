@@ -3,6 +3,7 @@ import { CreateEventInput, createEventSchema } from "src/schema/event.schema";
 import {
   createEvent,
   createNewEvent,
+  deleteEvent,
   getEventWithDetailsById,
   getPastEvents,
   getUpcomingEvents,
@@ -10,9 +11,9 @@ import {
 import { AuthError, BadRequestError, NotFoundError } from "src/utils/error";
 
 /**
- * @param req       Request object from express route
- * @param res       Response object from express route
- * @param next      NextFunction of express for middleware handling
+ * @route           /api/v1/events
+ * @method          POST
+ * @access          Autheticated
  */
 export const createEventController = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -55,11 +56,11 @@ export const createEventController = async (req: Request, res: Response, next: N
 };
 
 /**
- * @param req       Request object from express route
- * @param res       Response object from express route
- * @param next      NextFunction of express for middleware handling
+ * @route           /api/v1/events/upcoming?limit=10&page=1
+ * @method          GET
+ * @access          Optional Authenticated
  */
-export const upcomingEvents = async (req: Request, res: Response, next: NextFunction) => {
+export const upcomingEvents = async (req: Request, res: Response) => {
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 10;
 
@@ -75,9 +76,9 @@ export const upcomingEvents = async (req: Request, res: Response, next: NextFunc
 };
 
 /**
- * @param req       Request object from express route
- * @param res       Response object from express route
- * @param next      NextFunction of express for middleware handling
+ * @route           /api/v1/events/past?limit=10&page=1
+ * @method          GET
+ * @access          Optional Autheticated
  */
 export const pastEvents = async (req: Request, res: Response) => {
   const page = Number(req.query.page) || 1;
@@ -95,9 +96,9 @@ export const pastEvents = async (req: Request, res: Response) => {
 };
 
 /**
- * @param req       Request object from express route
- * @param res       Response object from express route
- * @param next      NextFunction of express for middleware handling
+ * @route           /api/v1/events/:id
+ * @method          GET
+ * @access          Optional Autheticated
  */
 export const eventById = async (req: Request, res: Response) => {
   const userId = req.user?.id ?? null;
@@ -116,4 +117,27 @@ export const eventById = async (req: Request, res: Response) => {
   }
 
   res.status(200).send(event);
+};
+
+/**
+ * @route           /api/v1/events
+ * @method          DELETE
+ * @access          Autheticated
+ */
+export const deleteEventController = async (req: Request, res: Response) => {
+  const eventId = Number(req.params.id);
+
+  if (!eventId || isNaN(eventId)) {
+    throw new BadRequestError("Invalid Event ID provided!");
+  }
+
+  if (!req.user || !req.user.id) {
+    throw new NotFoundError(
+      `You don't have permission to delete the event or the event of id ${eventId} does not exists!`,
+    );
+  }
+
+  await deleteEvent(eventId, req.user.id);
+
+  res.status(200).send({ message: `Event of id ${eventId} deleted!` });
 };

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   createEventController,
+  deleteEventController,
   eventById,
   pastEvents,
   upcomingEvents,
@@ -13,5 +14,6 @@ router.post("/", authenticate, createEventController);
 router.get("/upcoming", optionalAuthenticate, upcomingEvents);
 router.get("/past", optionalAuthenticate, pastEvents);
 router.get("/:id", optionalAuthenticate, eventById);
+router.delete("/:id", authenticate, deleteEventController);
 
 export default router;

@@ -302,3 +302,7 @@ export const findEventDetailsById = async (eventId: number, userId: number | nul
 
   return event ?? null;
 };
+
+export const deleteEventById = async (eventId: number): Promise<void> => {
+  await db("events").where({ id: eventId }).delete();
+};
