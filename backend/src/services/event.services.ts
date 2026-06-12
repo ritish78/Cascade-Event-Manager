@@ -128,6 +128,11 @@ export const getPastEvents = async (
   return findPastEvents(userId, limit, page);
 };
 
+/**
+ * @param eventId               number - id of the event to fetch details
+ * @param userId                number - id of the user
+ * @returns
+ */
 export const getEventWithDetailsById = async (
   eventId: number,
   userId: number | null,
@@ -137,6 +142,10 @@ export const getEventWithDetailsById = async (
   return event;
 };
 
+/**
+ * @param eventId               number - id of the event to delete
+ * @param userId                number - id of the user
+ */
 export const deleteEvent = async (eventId: number, userId: number) => {
   try {
     const event = await getEventById(eventId);
@@ -155,6 +164,12 @@ export const deleteEvent = async (eventId: number, userId: number) => {
   }
 };
 
+/**
+ * @param eventId               number - id of the event to update
+ * @param userId                number - id of the user
+ * @param data                  UpdateEventInput - fields to update
+ * @returns
+ */
 export const updateEventByItsId = async (eventId: number, userId: number, data: UpdateEventInput) => {
   try {
     const event = await getEventById(eventId);

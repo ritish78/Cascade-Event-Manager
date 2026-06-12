@@ -148,6 +148,11 @@ export const deleteEventController = async (req: Request, res: Response) => {
   res.status(200).send({ message: `Event of id ${eventId} deleted!` });
 };
 
+/**
+ * @route               /api/v1/events/:id
+ * @method              PUT
+ * @access              Authenticated
+ */
 export const updateEventController = async (req: Request, res: Response) => {
   const eventId = Number(req.params.id);
 

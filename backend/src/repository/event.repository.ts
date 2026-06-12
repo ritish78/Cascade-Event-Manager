@@ -319,6 +319,14 @@ export const findEventDetailsById = async (eventId: number, userId: number | nul
  */
 export const deleteEventById = async (eventId: number): Promise<void> => {
   await db("events").where({ id: eventId }).delete();
+  //OR we could write a query to delete eventId where created_by column has userId
+  //this would elimintate first searching if the event exists and then checking
+  //if the current user id matches created_by. We just simply send a delete
+  //to postgres. we would have less query but we wouldn't know if the user did
+  //not have permission to delete the event or if the event did not exists
+  //as .delete() returns 1 if deleted or 0 if not deleted. We wouldn't know the
+  //difference between the event not existing and the user not having permission
+  //await db("events").where({ id: eventId, created_by: userId }).delete();
 };
 
 /**
@@ -337,6 +345,11 @@ export const updateEventById = async (
     .update({ ...data, updated_at: new Date() });
 };
 
+/**
+ * @param eventId       number - id of the event to replace tags
+ * @param tagIds        number[] - ids of the tag to replace
+ * @param trx           QueryBuilder - db by default
+ */
 export const replaceTagsOfEvent = async (
   eventId: number,
   tagIds: number[],
@@ -367,6 +380,11 @@ export const replaceTagsOfEvent = async (
   }
 };
 
+/**
+ * @param eventId       number - id of the event to update with tags
+ * @param userId        number - id of the user
+ * @param data          UpdateEventInput
+ */
 export const updateEventWithTags = (
   eventId: number,
   userId: number,
