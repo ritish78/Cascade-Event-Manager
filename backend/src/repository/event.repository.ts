@@ -1,7 +1,7 @@
 import db from "src/db";
 import { Event, EventDetails, EventRow, PaginatedEvents } from "../types/event.types";
 import { Knex } from "knex";
-import { email } from "zod";
+import { UpdateEventInput } from "src/schema/event.schema";
 
 type QueryBuilder = Knex.Transaction | Knex;
 
@@ -155,7 +155,9 @@ const buildEventsFutureOrPastQuery = (
    * 
    SELECT e.id AS event_id, e.name AS event_name, e.description, e.location, e.is_private, e.created_by AS creator_id, e.category_id, e.event_date, 
         u.full_name AS creator_name,
-        c.id AS category_id, c.name AS category_name
+        c.id AS category_id, c.name AS category_name,
+        COUNT(*) OVER() AS events_count,    //added later
+        ARRAY(SELECT t.name FROM event_tags t JOIN t ON t.id = et.tag_id WHERE et.event_id = e.id) AS tags //added later
     FROM EVENTS e
     INNER JOIN users as u 
     ON e.created_by = u.id 
@@ -163,7 +165,9 @@ const buildEventsFutureOrPastQuery = (
     LEFT JOIN event_members AS em ON em.event_id = e.id
     WHERE event_date >= CURRENT_DATE 
     AND (em.user_id = 8 OR e.is_private = false)
-    ORDER BY e.event_date ASC;
+    ORDER BY e.event_date ASC
+    LIMIT 10
+    OFFSET 0;
 
     Planning:
         Buffers: shared hit=334
@@ -245,6 +249,7 @@ export const findUpcomingEvents = async (
   page: number,
 ): Promise<PaginatedEvents> => {
   const events: EventRow[] = await buildEventsFutureOrPastQuery(userId, limit, page);
+  console.log(buildEventsFutureOrPastQuery(userId, limit, page).toSQL().toNative());
   const totalEvents = Number(events[0]?.events_count ?? 0);
 
   return { totalEvents, page, limit, totalPages: Math.ceil(totalEvents / limit), events };
@@ -309,6 +314,81 @@ export const findEventDetailsById = async (eventId: number, userId: number | nul
   return event ?? null;
 };
 
+/**
+ * @param eventId           number - id of the event to delete
+ */
 export const deleteEventById = async (eventId: number): Promise<void> => {
   await db("events").where({ id: eventId }).delete();
+};
+
+/**
+ * @param eventId           number - id of the event to update
+ * @param data              Partial Event to update
+ * @param trx               QueryBuilder (Knex Transaction) | db - db by default
+ * @returns
+ */
+export const updateEventById = async (
+  eventId: number,
+  data: Partial<Event>,
+  trx: QueryBuilder = db,
+): Promise<void> => {
+  await trx("events")
+    .where({ id: eventId })
+    .update({ ...data, updated_at: new Date() });
+};
+
+export const replaceTagsOfEvent = async (
+  eventId: number,
+  tagIds: number[],
+  trx: QueryBuilder = db,
+): Promise<void> => {
+  //first, we are removing all tags of the event we could do a check to see what are the
+  //tags of the event then check if the id/name of the tag matches the tags supplied
+  //by the user. If it matches, we skip it and if it does not matches, then we insert
+  //another row to create new tags. But, we are going to remove all tags of the event
+  //first if event is provided in PATCH request body. Then we will add all tags to the event_tags table.
+  //If the event has these tags: 1, 3, 6 and the user wants to add a new tag
+  //PATCH request with tags: [1, 3, 6, 2]
+  //and if the user wants to delete the tag of id 3, then
+  //PATCH request with tags: [1, 6, 2].
+  //Sending a path request with tags: [] will delete all tags.
+  //This is the case for the tags only. A user can edit other with
+  await trx("event_tags").where({ event_id: eventId }).delete();
+
+  //Finally adding all the tags to the events
+  //we need to insert like this { event_id: 1, tag_id: 1 } so we need to map to format it
+  if (tagIds.length > 0) {
+    const rowsToAdd = tagIds.map((tagId) => ({
+      event_id: eventId,
+      tag_id: tagId,
+    }));
+
+    await trx("event_tags").insert(rowsToAdd);
+  }
+};
+
+export const updateEventWithTags = (
+  eventId: number,
+  userId: number,
+  data: UpdateEventInput,
+): Promise<EventDetails> => {
+  return db.transaction(async (trx) => {
+    const eventData: Partial<Event> = {};
+
+    if (data.name) eventData.name = data.name;
+    if (data.description) eventData.description = data.description;
+    if (data.location) eventData.location = data.location;
+    //isPrivate is boolean so, we can't just check with if (data.isPrivate)
+    if (data.isPrivate !== undefined) eventData.is_private = data.isPrivate;
+    if (data.categoryId) eventData.category_id = data.categoryId;
+    if (data.eventDate !== undefined) eventData.event_date = data.eventDate;
+
+    await updateEventById(eventId, eventData, trx);
+
+    if (data.tags !== undefined) {
+      await replaceTagsOfEvent(eventId, data.tags, trx);
+    }
+
+    return findEventDetailsById(eventId, userId);
+  });
 };

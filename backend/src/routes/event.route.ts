@@ -5,6 +5,7 @@ import {
   eventById,
   pastEvents,
   upcomingEvents,
+  updateEventController,
 } from "src/controller/event.controller";
 import { authenticate, optionalAuthenticate } from "src/middleware/authenticate";
 
@@ -15,5 +16,6 @@ router.get("/upcoming", optionalAuthenticate, upcomingEvents);
 router.get("/past", optionalAuthenticate, pastEvents);
 router.get("/:id", optionalAuthenticate, eventById);
 router.delete("/:id", authenticate, deleteEventController);
+router.patch("/:id", authenticate, updateEventController);
 
 export default router;

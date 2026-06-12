@@ -8,9 +8,11 @@ import {
   insertEventMember,
   insertEventTags,
   insertEventWithMembersAndTags,
+  updateEventWithTags,
 } from "src/repository/event.repository";
 import { ForbiddenError, NotFoundError } from "src/utils/error";
 import { Event, EventDetails, PaginatedEvents } from "src/types/event.types";
+import { UpdateEventInput } from "src/schema/event.schema";
 
 export const createNewEvent = async (
   userId: number,
@@ -149,6 +151,24 @@ export const deleteEvent = async (eventId: number, userId: number) => {
     //same error message when there is no event or the user does not have permission
     throw new NotFoundError(
       `You don't have permission to delete the event or the event of id ${eventId} does not exists!`,
+    );
+  }
+};
+
+export const updateEventByItsId = async (eventId: number, userId: number, data: UpdateEventInput) => {
+  try {
+    const event = await getEventById(eventId);
+
+    if (event.created_by !== userId) {
+      throw new ForbiddenError("User is not allowed to update other's event!");
+    }
+
+    const updatedEvent = await updateEventWithTags(eventId, userId, data);
+
+    return updatedEvent;
+  } catch (error) {
+    throw new NotFoundError(
+      `You don't have permission to update the event or the event of id ${eventId} does not exists!`,
     );
   }
 };

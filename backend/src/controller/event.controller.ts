@@ -1,5 +1,10 @@
 import { Request, Response, NextFunction } from "express";
-import { CreateEventInput, createEventSchema } from "src/schema/event.schema";
+import {
+  CreateEventInput,
+  createEventSchema,
+  UpdateEventInput,
+  updateEventSchema,
+} from "src/schema/event.schema";
 import {
   createEvent,
   createNewEvent,
@@ -7,6 +12,7 @@ import {
   getEventWithDetailsById,
   getPastEvents,
   getUpcomingEvents,
+  updateEventByItsId,
 } from "src/services/event.services";
 import { AuthError, BadRequestError, NotFoundError } from "src/utils/error";
 
@@ -140,4 +146,24 @@ export const deleteEventController = async (req: Request, res: Response) => {
   await deleteEvent(eventId, req.user.id);
 
   res.status(200).send({ message: `Event of id ${eventId} deleted!` });
+};
+
+export const updateEventController = async (req: Request, res: Response) => {
+  const eventId = Number(req.params.id);
+
+  if (!eventId || isNaN(eventId)) {
+    throw new BadRequestError("Invalid Event ID provided!");
+  }
+
+  if (!req.user || !req.user.id) {
+    throw new NotFoundError(
+      `You don't have permission to update the event or the event of id ${eventId} does not exists!`,
+    );
+  }
+
+  const data: UpdateEventInput = updateEventSchema.parse(req.body);
+
+  const updatedEvent = await updateEventByItsId(eventId, req.user.id, data);
+
+  res.status(200).send({ message: `Event of ID ${eventId} updated successfully!`, event: updatedEvent });
 };
