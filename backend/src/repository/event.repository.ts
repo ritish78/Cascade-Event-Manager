@@ -197,8 +197,8 @@ const buildEventsFutureOrPastQuery = (
    */
 
   return db("events as e")
-    .join("users as u", "e.created_by", "u.id")
-    .leftJoin("categories as c", "c.id", "e.category_id")
+    .join("users AS u", "e.created_by", "u.id")
+    .leftJoin("categories AS c", "c.id", "e.category_id")
     .select(
       "e.id AS event_id",
       "e.name AS event_name",
@@ -211,6 +211,9 @@ const buildEventsFutureOrPastQuery = (
       "c.id AS category_id",
       "c.name AS category_name",
       db.raw("COUNT(*) OVER() AS events_count"),
+      db.raw(
+        `ARRAY(SELECT t.name FROM event_tags et JOIN tags t ON t.id = et.tag_id WHERE et.event_id = e.id) AS tags`,
+      ),
     )
     .where("e.event_date", upcoming ? ">=" : "<", db.raw("CURRENT_DATE"))
     .where((builder) => {
@@ -284,6 +287,9 @@ export const findEventDetailsById = async (eventId: number, userId: number | nul
       "u.full_name AS creator_name",
       "c.id AS category_id",
       "c.name AS category_name",
+      db.raw(
+        `ARRAY(SELECT t.name FROM event_tags et JOIN tags t ON t.id = et.tag_id WHERE et.event_id = e.id) AS tags`,
+      ),
     )
     .where("e.id", eventId)
     .where((builder) => {

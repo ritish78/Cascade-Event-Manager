@@ -22,6 +22,7 @@ export interface EventDetails {
   creator_name: string;
   category_id: number | null; //shouldn't be null since we are getting category_id from category table after joining with events table
   category_name: string | null;
+  tag_names: string[];
 }
 
 export interface EventRow extends EventDetails {

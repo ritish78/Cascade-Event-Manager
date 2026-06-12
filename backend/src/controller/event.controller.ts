@@ -64,7 +64,7 @@ export const upcomingEvents = async (req: Request, res: Response) => {
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 10;
 
-  if (!isNaN(page) || isNaN(limit)) {
+  if (isNaN(page) || isNaN(limit)) {
     throw new BadRequestError("Invalid request query provided!");
   }
 
@@ -84,7 +84,7 @@ export const pastEvents = async (req: Request, res: Response) => {
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 10;
 
-  if (!isNaN(page) || isNaN(limit)) {
+  if (isNaN(page) || isNaN(limit)) {
     throw new BadRequestError("Invalid request query provided!");
   }
 
