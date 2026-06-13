@@ -9,7 +9,7 @@ import { AuthError, BadRequestError } from "src/utils/error";
  * @method          POST
  * @access          Public
  */
-export const login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const loginController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const userInput: LoginInput = loginSchema.parse(req.body);
 
@@ -51,7 +51,11 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
  * @method          POST
  * @access          Autheticated
  */
-export const refreshAccess = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const refreshAccessController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
   try {
     const refreshToken = req.cookies?.refreshToken;
 
@@ -74,7 +78,7 @@ export const refreshAccess = async (req: Request, res: Response, next: NextFunct
  * @method          POST
  * @access          Autheticated
  */
-export const logout = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const logoutController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const refreshToken = req.cookies?.refreshToken;
 
@@ -98,7 +102,7 @@ export const logout = async (req: Request, res: Response, next: NextFunction): P
  * @method          POST
  * @access          Public
  */
-export const register = async (req: Request, res: Response, next: NextFunction) => {
+export const registerController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userInput: RegisterInput = registerSchema.parse(req.body);
 

@@ -36,3 +36,9 @@ export interface PaginatedEvents {
   totalPages: number;
   events: EventRow[];
 }
+
+//we have these event search filters
+export interface EventFilters {
+  tagIds?: number[];
+  isPrivate?: boolean;
+}

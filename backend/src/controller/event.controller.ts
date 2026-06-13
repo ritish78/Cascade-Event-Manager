@@ -9,11 +9,13 @@ import {
   createEvent,
   createNewEvent,
   deleteEvent,
+  filterEventsByTagsAndEventType,
   getEventWithDetailsById,
   getPastEvents,
   getUpcomingEvents,
   updateEventByItsId,
 } from "src/services/event.services";
+import { EventFilters } from "src/types/event.types";
 import { AuthError, BadRequestError, NotFoundError } from "src/utils/error";
 
 /**
@@ -66,7 +68,7 @@ export const createEventController = async (req: Request, res: Response, next: N
  * @method          GET
  * @access          Optional Authenticated
  */
-export const upcomingEvents = async (req: Request, res: Response) => {
+export const upcomingEventsController = async (req: Request, res: Response) => {
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 10;
 
@@ -86,7 +88,7 @@ export const upcomingEvents = async (req: Request, res: Response) => {
  * @method          GET
  * @access          Optional Autheticated
  */
-export const pastEvents = async (req: Request, res: Response) => {
+export const pastEventsController = async (req: Request, res: Response) => {
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 10;
 
@@ -106,7 +108,7 @@ export const pastEvents = async (req: Request, res: Response) => {
  * @method          GET
  * @access          Optional Autheticated
  */
-export const eventById = async (req: Request, res: Response) => {
+export const eventByIdController = async (req: Request, res: Response) => {
   const userId = req.user?.id ?? null;
   const eventId = Number(req.params.id);
 
@@ -171,4 +173,32 @@ export const updateEventController = async (req: Request, res: Response) => {
   const updatedEvent = await updateEventByItsId(eventId, req.user.id, data);
 
   res.status(200).send({ message: `Event of ID ${eventId} updated successfully!`, event: updatedEvent });
+};
+
+export const filterEventsController = async (req: Request, res: Response) => {
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+
+  if (isNaN(page) || isNaN(limit)) {
+    throw new BadRequestError("Invalid request query provided!");
+  }
+
+  const filters: EventFilters = {};
+
+  if (req.query.isPrivate !== undefined) {
+    filters.isPrivate = req.query.isPrivate === "true";
+  }
+
+  const tagIdsFromQuery = req.query.tagIds;
+  if (tagIdsFromQuery) {
+    //without (tagIdsFromQuery as string), TS was not allowing to split
+    const tagIds = Array.isArray(tagIdsFromQuery) ? tagIdsFromQuery : (tagIdsFromQuery as string).split(",");
+
+    filters.tagIds = tagIds.map(Number).filter((id) => !isNaN(id));
+  }
+  const userId = req.user?.id ?? null;
+
+  const events = await filterEventsByTagsAndEventType(userId, limit, page, filters);
+
+  res.status(200).send(events);
 };

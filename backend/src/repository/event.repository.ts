@@ -1,5 +1,5 @@
 import db from "src/db";
-import { Event, EventDetails, EventRow, PaginatedEvents } from "../types/event.types";
+import { Event, EventDetails, EventFilters, EventRow, PaginatedEvents } from "../types/event.types";
 import { Knex } from "knex";
 import { UpdateEventInput } from "src/schema/event.schema";
 
@@ -148,6 +148,7 @@ const buildEventsFutureOrPastQuery = (
   limit: number,
   page: number,
   upcoming: boolean = true,
+  filters: EventFilters = {},
 ) => {
   const offset = (page - 1) * limit;
   /**
@@ -200,7 +201,7 @@ const buildEventsFutureOrPastQuery = (
         Execution Time: 0.489 ms
    */
 
-  return db("events as e")
+  const baseQuery = db("events AS e")
     .join("users AS u", "e.created_by", "u.id")
     .leftJoin("categories AS c", "c.id", "e.category_id")
     .select(
@@ -231,10 +232,29 @@ const buildEventsFutureOrPastQuery = (
             .select(db.raw("1")),
         );
       }
-    })
+    });
+
+  const { tagIds, isPrivate } = filters;
+
+  if (isPrivate !== undefined) {
+    baseQuery.where("e.is_private", isPrivate);
+  }
+
+  if (tagIds && tagIds.length > 0) {
+    baseQuery.whereExists(
+      db("event_tags AS et")
+        .where("et.event_id", db.ref("e.id"))
+        .whereIn("et.tag_id", tagIds)
+        .select(db.raw("1")),
+    );
+  }
+
+  baseQuery
     .orderBy("e.event_date", upcoming ? "asc" : "desc")
     .limit(limit)
     .offset(offset);
+
+  return baseQuery;
 };
 
 /**
@@ -249,7 +269,7 @@ export const findUpcomingEvents = async (
   page: number,
 ): Promise<PaginatedEvents> => {
   const events: EventRow[] = await buildEventsFutureOrPastQuery(userId, limit, page);
-  console.log(buildEventsFutureOrPastQuery(userId, limit, page).toSQL().toNative());
+  //   console.log(buildEventsFutureOrPastQuery(userId, limit, page).toSQL().toNative());
   const totalEvents = Number(events[0]?.events_count ?? 0);
 
   return { totalEvents, page, limit, totalPages: Math.ceil(totalEvents / limit), events };
@@ -409,4 +429,24 @@ export const updateEventWithTags = (
 
     return findEventDetailsById(eventId, userId);
   });
+};
+
+/**
+ * @param userId
+ * @param limit
+ * @param page
+ * @param filters
+ * @returns
+ */
+export const filterEvents = async (
+  userId: number | null,
+  limit: number,
+  page: number,
+  filters: EventFilters,
+) => {
+  const events: EventRow[] = await buildEventsFutureOrPastQuery(userId, limit, page, true, filters);
+
+  const totalEvents = Number(events[0]?.events_count ?? 0);
+
+  return { totalEvents, page, limit, totalPages: Math.ceil(totalEvents / limit), events };
 };
