@@ -41,4 +41,9 @@ export interface PaginatedEvents {
 export interface EventFilters {
   tagIds?: number[];
   isPrivate?: boolean;
+  createdBy?: number;
+  categoryId?: number | null;
+  from?: Date | string;
+  to?: Date | string;
+  sort?: string; //we have come full circle. /upcoming and /past.
 }

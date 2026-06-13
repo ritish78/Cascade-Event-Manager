@@ -19,5 +19,32 @@ export const createEventSchema = z.object({
 
 export const updateEventSchema = createEventSchema.partial();
 
+export const eventFilterSchema = z.object({
+  isPrivate: z
+    .enum(["true", "false"]) //the url req.query will have boolean values as string
+    .optional()
+    .transform((input) => (input === undefined ? undefined : input === "true")),
+  createdBy: z.coerce.number().positive().optional(), //id will always be positive,
+  categoryId: z
+    .union([z.literal("null"), z.coerce.number().positive()])
+    .optional()
+    .transform((input) => (input === "null" ? null : input)),
+  from: z.coerce.date().optional(),
+  to: z.coerce.date().optional(),
+
+  tagIds: z
+    .string()
+    .optional()
+    .transform((input) =>
+      input
+        ? input
+            .split(",")
+            .map(Number)
+            .filter((n) => !isNaN(n))
+        : undefined,
+    ),
+});
+
 export type CreateEventInput = z.infer<typeof createEventSchema>;
 export type UpdateEventInput = z.infer<typeof updateEventSchema>;
+export type EventFilterInput = z.infer<typeof eventFilterSchema>;

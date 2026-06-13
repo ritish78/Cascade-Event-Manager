@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import {
   CreateEventInput,
   createEventSchema,
+  eventFilterSchema,
   UpdateEventInput,
   updateEventSchema,
 } from "src/schema/event.schema";
@@ -175,6 +176,13 @@ export const updateEventController = async (req: Request, res: Response) => {
   res.status(200).send({ message: `Event of ID ${eventId} updated successfully!`, event: updatedEvent });
 };
 
+/**
+ * @route               /api/v1/events
+ * @method              GET
+ * @access              Authenticated
+ * @example             /api/v1/events?tagIds=1,2,3&isPrivate=true [filtering events by tagIds and isPrivate]
+ * @example
+ */
 export const filterEventsController = async (req: Request, res: Response) => {
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 10;
@@ -183,19 +191,31 @@ export const filterEventsController = async (req: Request, res: Response) => {
     throw new BadRequestError("Invalid request query provided!");
   }
 
-  const filters: EventFilters = {};
+  //For filtering with just isPrivate and tags, we were using this way to set
+  //the filtering object. Now, adding more fields and will cause more and more
+  //lines of checks. We will now move to Zod to check the user's req.query
+  //   if (req.query.isPrivate !== undefined) {
+  //     filters.isPrivate = req.query.isPrivate === "true";
+  //   }
 
-  if (req.query.isPrivate !== undefined) {
-    filters.isPrivate = req.query.isPrivate === "true";
-  }
+  //   const tagIdsFromQuery = req.query.tagIds;
+  //   if (tagIdsFromQuery) {
+  //     //without (tagIdsFromQuery as string), TS was not allowing to split
+  //     const tagIds = Array.isArray(tagIdsFromQuery) ? tagIdsFromQuery : (tagIdsFromQuery as string).split(",");
 
-  const tagIdsFromQuery = req.query.tagIds;
-  if (tagIdsFromQuery) {
-    //without (tagIdsFromQuery as string), TS was not allowing to split
-    const tagIds = Array.isArray(tagIdsFromQuery) ? tagIdsFromQuery : (tagIdsFromQuery as string).split(",");
+  //     filters.tagIds = tagIds.map(Number).filter((id) => !isNaN(id));
+  //   }
 
-    filters.tagIds = tagIds.map(Number).filter((id) => !isNaN(id));
-  }
+  const parsedFilters = eventFilterSchema.parse(req.query);
+  const filters: EventFilters = {
+    isPrivate: parsedFilters.isPrivate,
+    tagIds: parsedFilters.tagIds,
+    createdBy: parsedFilters.createdBy,
+    categoryId: parsedFilters.categoryId,
+    from: parsedFilters.from,
+    to: parsedFilters.to,
+  };
+
   const userId = req.user?.id ?? null;
 
   const events = await filterEventsByTagsAndEventType(userId, limit, page, filters);

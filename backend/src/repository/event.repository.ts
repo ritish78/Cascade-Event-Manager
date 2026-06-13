@@ -234,7 +234,7 @@ const buildEventsFutureOrPastQuery = (
       }
     });
 
-  const { tagIds, isPrivate } = filters;
+  const { tagIds, isPrivate, createdBy, categoryId, from, to, sort } = filters;
 
   if (isPrivate !== undefined) {
     baseQuery.where("e.is_private", isPrivate);
@@ -247,6 +247,26 @@ const buildEventsFutureOrPastQuery = (
         .whereIn("et.tag_id", tagIds)
         .select(db.raw("1")),
     );
+  }
+
+  if (createdBy !== undefined) {
+    baseQuery.where("e.created_by", createdBy);
+  }
+
+  if (categoryId !== undefined) {
+    if (categoryId === null) {
+      baseQuery.whereNull("e.category_id");
+    } else {
+      baseQuery.where("e.category_id", categoryId);
+    }
+  }
+
+  if (from !== undefined) {
+    baseQuery.where("e.event_date", ">=", from);
+  }
+
+  if (to !== undefined) {
+    baseQuery.where("e.event_date", "<=", to);
   }
 
   baseQuery
@@ -432,18 +452,18 @@ export const updateEventWithTags = (
 };
 
 /**
- * @param userId
- * @param limit
- * @param page
- * @param filters
- * @returns
+ * @param userId            number | null - user id if logged in otherwise null
+ * @param limit             number - number of events to fetch
+ * @param page              number - number of page the user is in
+ * @param filters           EventFilters
+ * @returns                 Promise<PaginatedEvents>
  */
 export const filterEvents = async (
   userId: number | null,
   limit: number,
   page: number,
   filters: EventFilters,
-) => {
+): Promise<PaginatedEvents> => {
   const events: EventRow[] = await buildEventsFutureOrPastQuery(userId, limit, page, true, filters);
 
   const totalEvents = Number(events[0]?.events_count ?? 0);
