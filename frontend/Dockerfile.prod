@@ -15,7 +15,7 @@ RUN pnpm build
 #Now, for the final build
 FROM nginx:1.31-alpine
 
-COPY --from=builder /home/eventmanagemement/frontend/dist /usr/share/nginx/html
+COPY --from=builder /home/eventmanagement/frontend/dist /usr/share/nginx/html
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
