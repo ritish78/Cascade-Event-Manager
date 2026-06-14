@@ -11,6 +11,13 @@ services:
       - 127.0.0.1:5000:5000
     command: node dist/index.js
 
+  eventmanagementfrontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    ports:
+      - 80:80
+
   eventmanagementdatabase:
     environment:
       POSTGRES_HOST: ${POSTGRES_HOST}

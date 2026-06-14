@@ -9,6 +9,14 @@ services:
     depends_on:
       - eventmanagementdatabase
 
+  eventmanagementfrontend:
+    container_name: eventmanagementfrontend
+    restart: unless-stopped
+    networks:
+      - eventmanagementnetwork
+    depends_on:
+      - eventmanagementbackend
+
   eventmanagementdatabase:
     container_name: eventmanagementdatabase
     image: postgres:18-alpine

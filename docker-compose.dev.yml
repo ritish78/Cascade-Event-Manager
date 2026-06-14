@@ -9,8 +9,23 @@ services:
     env_file:
       - ./backend/.env.development
     volumes:
-      - ./backend:/home/eventmanagement
-      - /home/eventmanagement/node_modules
+      - ./backend:/home/eventmanagement/backend
+      - /home/eventmanagement/backend/node_modules
+    command: pnpm run dev
+
+  eventmanagementfrontend:
+    container_name: eventmanagementfrontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+    ports:
+      - 5173:5173
+    volumes:
+      - ./frontend:/home/eventmanagement/frontend
+      - /home/eventmanagement/frontend/node_modules
     command: pnpm run dev
 
   eventmanagementdatabase:

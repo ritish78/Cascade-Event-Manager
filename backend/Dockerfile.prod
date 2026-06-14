@@ -2,7 +2,7 @@ FROM node:26-alpine AS builder
 
 RUN npm install -g pnpm@10.33.2
 
-WORKDIR /home/eventmanagement
+WORKDIR /home/eventmanagement/backend
 
 COPY package.json pnpm-lock.yaml ./
 
@@ -17,7 +17,7 @@ FROM node:26-alpine
 
 RUN npm install -g pnpm@10.33.2
 
-WORKDIR /home/eventmanagement
+WORKDIR /home/eventmanagement/backend
 
 #The user name is set as rajeshhamal, even though I am not Rajesh Hamal. 
 #Used it instead of John Doe or something similar default
@@ -27,9 +27,9 @@ COPY package.json pnpm-lock.yaml ./
 
 RUN pnpm install --frozen-lockfile --prod
 
-COPY --from=builder /home/eventmanagement/dist ./dist
+COPY --from=builder /home/eventmanagement/backend/dist ./dist
 
-RUN chown -R rajeshhamal:eventmanagementappgroup /home/eventmanagement
+RUN chown -R rajeshhamal:eventmanagementappgroup /home/eventmanagement/backend
 
 USER rajeshhamal
 

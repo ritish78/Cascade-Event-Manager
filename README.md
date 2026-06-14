@@ -24,3 +24,9 @@ docker exec -it eventmanagementbackend pnpm migrate:latest
 ### Decisions:
 
 1. While creating users, we have these columns; id (serial), full_name, email, password, is_verified, is_active, created_at and updated_at. `is_active` is set as `true` by default. When the admin bans the user, we set is_active to be `false`.
+
+### Check the tables in Postgres:
+
+```
+docker exec -it eventmanagementdatabase psql -U rajeshhamal -d eventmanagement -c "\dt"
+```
