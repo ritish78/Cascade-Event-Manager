@@ -4,6 +4,8 @@ import { useAuth } from "../hooks/useAuth";
 const PublicRoute = () => {
   const { user, isLoading } = useAuth();
 
+  console.log("Public route:", { user, isLoading });
+
   if (isLoading)
     return (
       <div>

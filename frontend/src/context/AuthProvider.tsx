@@ -7,6 +7,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  //   console.log("User:", { user });
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
