@@ -2,6 +2,7 @@ import db from "src/db";
 import { Event, EventDetails, EventFilters, EventRow, PaginatedEvents } from "../types/event.types";
 import { Knex } from "knex";
 import { UpdateEventInput } from "src/schema/event.schema";
+import { Tag } from "src/types/tag.types";
 
 type QueryBuilder = Knex.Transaction | Knex;
 

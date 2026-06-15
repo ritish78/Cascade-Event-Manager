@@ -14,6 +14,7 @@ import {
 import { ForbiddenError, NotFoundError } from "src/utils/error";
 import { Event, EventDetails, EventFilters, PaginatedEvents } from "src/types/event.types";
 import { UpdateEventInput } from "src/schema/event.schema";
+import { Tag } from "src/types/tag.types";
 
 export const createNewEvent = async (
   userId: number,
@@ -190,11 +191,18 @@ export const updateEventByItsId = async (eventId: number, userId: number, data: 
   return updatedEvent;
 };
 
+/**
+ * @param userId        number | null - userid if logged in and null if not
+ * @param limit         number - number of events to fetch at a time
+ * @param page          number - current page number that we are on
+ * @param filters       EventFilters - filters applied by user
+ * @returns             Promise<PaginatedEvents>
+ */
 export const filterEventsByTagsAndEventType = async (
   userId: number | null,
   limit: number,
   page: number,
   filters: EventFilters,
-) => {
+): Promise<PaginatedEvents> => {
   return filterEvents(userId, limit, page, filters);
 };

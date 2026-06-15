@@ -7,7 +7,6 @@ import {
   updateEventSchema,
 } from "src/schema/event.schema";
 import {
-  createEvent,
   createNewEvent,
   deleteEvent,
   filterEventsByTagsAndEventType,
