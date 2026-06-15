@@ -50,6 +50,7 @@ export const insertEventMember = async (
   eventId: number,
   userId: number,
   invitedBy: number,
+  role: string,
   status: string,
   trx: QueryBuilder = db,
 ): Promise<void> => {
@@ -57,6 +58,7 @@ export const insertEventMember = async (
     event_id: eventId,
     user_id: userId,
     invited_by: invitedBy,
+    role: role,
     status: status,
   });
 };
@@ -101,6 +103,7 @@ export const insertEventWithMembersAndTags = (
   categoryId: number,
   eventDate: Date,
   invitedBy: number,
+  role: string,
   status: string,
   tagIds: number[],
 ) => {
@@ -116,7 +119,7 @@ export const insertEventWithMembersAndTags = (
       trx,
     );
 
-    await insertEventMember(event.id, userId, invitedBy, status, trx);
+    await insertEventMember(event.id, userId, invitedBy, role, status, trx);
 
     if (tagIds.length > 0) {
       await insertEventTags(event.id, tagIds, trx);
@@ -335,6 +338,23 @@ export const findEventDetailsById = async (eventId: number, userId: number | nul
       db.raw(
         `ARRAY(SELECT t.name FROM event_tags et JOIN tags t ON t.id = et.tag_id WHERE et.event_id = e.id) AS tags`,
       ),
+      db.raw(`
+        COALESCE(
+          (SELECT json_agg(
+            json_build_object(
+              'user_id', em.user_id,
+              'full_name', mu.full_name,
+              'status', em.status,
+              'role', em.role
+            )
+          )
+          FROM event_members em
+          JOIN users mu ON mu.id = em.user_id
+          WHERE em.event_id = e.id
+          AND em.role != 'organizer'
+          ), '[]'
+        ) AS members
+        `),
     )
     .where("e.id", eventId)
     .where((builder) => {

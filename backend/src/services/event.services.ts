@@ -36,6 +36,7 @@ export const createNewEvent = async (
     categoryId,
     eventDate,
     invitedBy,
+    "organizer", //organizer if theuser is creating the event. "attendee" if the user accepts the event
     status,
     tagIds,
   );
@@ -78,7 +79,7 @@ export const createEvent = async (
   //Then we get the event id from above event and use it to add event_memebers
   //The invited_by is userId itself and we are setting "accepted" by default when
   //they have created the event.
-  await insertEventMember(event.id, userId, userId, "accepted");
+  await insertEventMember(event.id, userId, userId, "organizer", "accepted");
 
   if (tagIds.length > 0) {
     await insertEventTags(event.id, tagIds);

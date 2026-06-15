@@ -63,11 +63,11 @@ export const refreshAccessController = async (
       throw new AuthError("Refresh token was not provided!");
     }
 
-    const { accessToken } = await refreshAccessToken(refreshToken);
+    const { accessToken, user } = await refreshAccessToken(refreshToken);
 
     res.cookie("accessToken", accessToken, ACCESS_TOKEN_COOKIE_OPTIONS);
 
-    res.status(200).send({ message: "Access Token refreshed!" });
+    res.status(200).send({ message: "Access Token refreshed!", user });
   } catch (error) {
     next(error);
   }
