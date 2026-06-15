@@ -7,6 +7,7 @@ import { errorHandler } from "./middleware/errorHandler.middleware";
 import authRoute from "./routes/auth.route";
 import eventRoute from "./routes/event.route";
 import tagRoute from "./routes/tag.route";
+import categoriesRoute from "./routes/categories.route";
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.get("/api/v1/ping", (req: Request, res: Response) => {
 app.use("/api/v1/auth", authRoute);
 app.use("/api/v1/events", eventRoute);
 app.use("/api/v1/tags", tagRoute);
+app.use("/api/v1/categories", categoriesRoute);
 
 app.use(errorHandler);
 
