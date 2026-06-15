@@ -32,6 +32,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     await api.post("/auth/logout");
     setUser(null);
+    window.location.href = "/";
   };
 
   const register = async (fullName: string, email: string, password: string, confirmPassword: string) => {

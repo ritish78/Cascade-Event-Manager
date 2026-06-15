@@ -1,9 +1,9 @@
 export interface User {
   id: number;
-  fullName: string;
+  full_name: string;
   email: string;
-  isVerified: boolean;
-  isActive: boolean;
+  is_verified: boolean;
+  is_active: boolean;
 }
 
 export interface AuthContextType {

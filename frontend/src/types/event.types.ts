@@ -1,16 +1,3 @@
-export interface Event {
-  id: number;
-  name: string;
-  description: string;
-  location: string;
-  is_private: boolean;
-  created_by: number;
-  category_id: number | null;
-  event_date: Date;
-  created_at: Date;
-  updated_at: Date;
-}
-
 export interface Member {
   user_id: number;
   full_name: string;
@@ -44,15 +31,4 @@ export interface PaginatedEvents {
   limit: number;
   totalPages: number;
   events: EventRow[];
-}
-
-//we have these event search filters
-export interface EventFilters {
-  tagIds?: number[];
-  isPrivate?: boolean;
-  createdBy?: number;
-  categoryId?: number | null;
-  from?: Date | string;
-  to?: Date | string;
-  sort?: string; //we have come full circle. /upcoming and /past.
 }

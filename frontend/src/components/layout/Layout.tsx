@@ -7,30 +7,30 @@ const Layout = () => {
   return (
     <div>
       <nav className="flex items-center justify-between px-6 py-4 border-b">
-        <a href="/" className="font-bold text-lg">
+        <a href="/" className="font-bold text-lg hover:text-emerald-400">
           Cascade Event Manager
         </a>
         <div className="flex gap-4">
           {user ? (
             <>
-              <span className="text-sm text-gray-600">{user.fullName}</span>
-              <button onClick={logout} className="text-sm text-red-500 hover:underline">
+              <span className="text-emerald-600">{user.full_name},</span>
+              <button onClick={logout} className="text-sm text-red-400 hover:underline">
                 Logout!
               </button>
             </>
           ) : (
             <>
-              <a href="/login" className="text-sm hover:underline">
+              <a href="/login" className="text-sm hover:text-emerald-400">
                 Login
               </a>
-              <a href="/register" className="text-sm hover:underline">
+              <a href="/register" className="text-sm hover:text-emerald-400">
                 Register
               </a>
             </>
           )}
         </div>
       </nav>
-      <main className="px-6 py-8">
+      <main className="px-6">
         <Outlet />
       </main>
     </div>
