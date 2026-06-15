@@ -14,7 +14,7 @@ export const createEventSchema = z.object({
   isPrivate: z.boolean().optional(), //by default, we will set it as false.
   eventDate: z.coerce.date().min(new Date(), { error: "New events must be in the future!" }), //user won't be create event that has already expired
   categoryId: z.number().positive(),
-  tags: z.array(z.number().positive()).optional(), //id of the tags
+  tagIds: z.array(z.number().positive()).optional(), //id of the tags
 });
 
 export const updateEventSchema = createEventSchema.partial();

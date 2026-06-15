@@ -14,7 +14,6 @@ import {
 import { ForbiddenError, NotFoundError } from "src/utils/error";
 import { Event, EventDetails, EventFilters, PaginatedEvents } from "src/types/event.types";
 import { UpdateEventInput } from "src/schema/event.schema";
-import { Tag } from "src/types/tag.types";
 
 export const createNewEvent = async (
   userId: number,

@@ -27,22 +27,9 @@ export const createEventController = async (req: Request, res: Response, next: N
   try {
     const userInput: CreateEventInput = createEventSchema.parse(req.body);
 
-    console.log("Sent correct info!");
-
     if (!req.user?.id) {
       throw new AuthError("Missing tokens! Login in first!");
     }
-
-    // const event = await createEvent(
-    //   req.user.id,
-    //   userInput.name,
-    //   userInput.description,
-    //   userInput.location,
-    //   userInput.isPrivate,
-    //   userInput.categoryId,
-    //   userInput.eventDate,
-    //   userInput.tags || [],
-    // );
 
     const event = await createNewEvent(
       req.user.id,
@@ -54,7 +41,7 @@ export const createEventController = async (req: Request, res: Response, next: N
       userInput.eventDate,
       req.user.id,
       "accepted",
-      userInput.tags,
+      userInput.tagIds,
     );
 
     res.status(201).send({ message: `Event created of id ${event.id}` });

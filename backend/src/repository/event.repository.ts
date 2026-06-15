@@ -2,7 +2,6 @@ import db from "src/db";
 import { Event, EventDetails, EventFilters, EventRow, PaginatedEvents } from "../types/event.types";
 import { Knex } from "knex";
 import { UpdateEventInput } from "src/schema/event.schema";
-import { Tag } from "src/types/tag.types";
 
 type QueryBuilder = Knex.Transaction | Knex;
 
@@ -466,8 +465,8 @@ export const updateEventWithTags = (
 
     await updateEventById(eventId, eventData, trx);
 
-    if (data.tags !== undefined) {
-      await replaceTagsOfEvent(eventId, data.tags, trx);
+    if (data.tagIds !== undefined) {
+      await replaceTagsOfEvent(eventId, data.tagIds, trx);
     }
 
     return findEventDetailsById(eventId, userId);
