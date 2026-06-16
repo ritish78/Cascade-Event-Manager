@@ -44,7 +44,7 @@ export const createEventController = async (req: Request, res: Response, next: N
       userInput.tagIds,
     );
 
-    res.status(201).send({ message: `Event created of id ${event.id}` });
+    res.status(201).send({ message: `New Event created!`, event_id: event.id });
   } catch (error) {
     next(error);
   }
