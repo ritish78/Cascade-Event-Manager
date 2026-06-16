@@ -21,6 +21,7 @@ import {
 } from "src/services/event.services";
 import { EventFilters } from "src/types/event.types";
 import { AuthError, BadRequestError, NotFoundError } from "src/utils/error";
+import { parseTimeFrame } from "src/utils/parseTimeframe";
 
 /**
  * @route           /api/v1/events
@@ -195,18 +196,6 @@ export const filterEventsController = async (req: Request, res: Response) => {
 
   //     filters.tagIds = tagIds.map(Number).filter((id) => !isNaN(id));
   //   }
-  //the parseTimeFrmae seems like it should not exists. I was querying
-  //upcoming=true/false, and wanted to reuse the same  filter functions
-  //to allow for all events (past and future) to show up as well.
-  //while still having the functionality where if nothing is provided
-  //i.e. undefined, then it would use the upcoming=true by default.
-  const parseTimeFrame = (option: unknown): "upcoming" | "past" | "all" | undefined => {
-    if (option === "upcoming") return "upcoming";
-    if (option === "past") return "past";
-    if (option === "all") return "all";
-
-    return undefined;
-  };
 
   const parsedFilters = eventFilterSchema.parse(req.query);
   const filters: EventFilters = {
@@ -249,6 +238,11 @@ export const joinEventController = async (req: Request, res: Response): Promise<
   res.status(200).send({ message: "You joined the event!" });
 };
 
+/**
+ * @route            /api/v1/events/:id/invite
+ * @method           POST
+ * @access           Authenticated
+ */
 export const inviteUserToEventController = async (req: Request, res: Response) => {
   const eventId = Number(req.params.id);
 
@@ -267,4 +261,33 @@ export const inviteUserToEventController = async (req: Request, res: Response) =
   const invitedUser = await inviteUserToEvent(eventId, req.user.id, userBody.email);
 
   res.status(200).send({ message: `Invited ${invitedUser.full_name} successfully!` });
+};
+
+/**
+ * @route           /api/v1/events/mine
+ * @method          GET
+ * @access          Authenticated
+ */
+export const getAllEventsOfUserController = async (req: Request, res: Response) => {
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+
+  if (isNaN(page) || isNaN(limit)) {
+    throw new BadRequestError("Invalid request query provided!");
+  }
+
+  //we will use it after autheticated middleware, so req.user.id will not be empty
+  //but still having checks like in the above functions
+  if (!req.user || !req.user.id) {
+    throw new NotFoundError(`You need to login first!`);
+  }
+
+  const filter = {
+    createdBy: req.user.id,
+    timeframe: parseTimeFrame(req.query.timeframe),
+  };
+
+  const events = await filterEventsByTagsAndEventType(req.user.id, limit, page, filter);
+
+  res.status(200).send(events);
 };
