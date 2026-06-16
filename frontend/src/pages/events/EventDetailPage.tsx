@@ -127,10 +127,10 @@ const EventDetailPage = () => {
                 <div className="flex flex-wrap gap-2">
                   {event.tags.map((tag) => (
                     <span
-                      key={tag}
+                      key={tag.id}
                       className="bg-slate-800/70 text-slate-300 px-3 py-1.5 rounded-md text-sm border border-slate-700"
                     >
-                      {tag}
+                      {tag.name}
                     </span>
                   ))}
                 </div>

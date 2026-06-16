@@ -1,3 +1,5 @@
+import { Tag } from "./tag.types";
+
 export interface Event {
   id: number;
   name: string;
@@ -30,7 +32,7 @@ export interface EventDetails {
   creator_name: string;
   category_id: number | null; //shouldn't be null since we are getting category_id from category table after joining with events table
   category_name: string | null;
-  tags: string[];
+  tags: Tag[];
   members: Member[];
 }
 

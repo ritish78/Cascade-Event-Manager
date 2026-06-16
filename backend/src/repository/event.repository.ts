@@ -337,9 +337,17 @@ export const findEventDetailsById = async (eventId: number, userId: number | nul
       "u.full_name AS creator_name",
       "c.id AS category_id",
       "c.name AS category_name",
-      db.raw(
-        `ARRAY(SELECT t.name FROM event_tags et JOIN tags t ON t.id = et.tag_id WHERE et.event_id = e.id) AS tags`,
-      ),
+      db.raw(`
+        COALESCE(
+            (SELECT json_agg(
+            json_build_object('id', t.id, 'name', t.name)
+            )
+            FROM event_tags et
+            JOIN tags t ON t.id = et.tag_id
+            WHERE et.event_id = e.id
+            ), '[]'
+        ) AS tags
+        `),
       db.raw(`
         COALESCE(
           (SELECT json_agg(
