@@ -54,6 +54,7 @@ export interface EventFilters {
   isPrivate?: boolean;
   createdBy?: number;
   categoryId?: number | null;
+  timeframe?: "upcoming" | "past" | "all";
   from?: Date | string;
   to?: Date | string;
   sort?: string; //we have come full circle. /upcoming and /past.

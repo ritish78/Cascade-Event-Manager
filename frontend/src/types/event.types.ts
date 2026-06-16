@@ -52,3 +52,8 @@ export interface EventFormProps {
   error?: string | null;
   onSubmit: (data: EventFormData) => Promise<void>;
 }
+
+export interface InviteModalProps {
+  eventId: number;
+  onClose: () => void;
+}

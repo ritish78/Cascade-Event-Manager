@@ -195,6 +195,18 @@ export const filterEventsController = async (req: Request, res: Response) => {
 
   //     filters.tagIds = tagIds.map(Number).filter((id) => !isNaN(id));
   //   }
+  //the parseTimeFrmae seems like it should not exists. I was querying
+  //upcoming=true/false, and wanted to reuse the same  filter functions
+  //to allow for all events (past and future) to show up as well.
+  //while still having the functionality where if nothing is provided
+  //i.e. undefined, then it would use the upcoming=true by default.
+  const parseTimeFrame = (option: unknown): "upcoming" | "past" | "all" | undefined => {
+    if (option === "upcoming") return "upcoming";
+    if (option === "past") return "past";
+    if (option === "all") return "all";
+
+    return undefined;
+  };
 
   const parsedFilters = eventFilterSchema.parse(req.query);
   const filters: EventFilters = {
@@ -202,6 +214,7 @@ export const filterEventsController = async (req: Request, res: Response) => {
     tagIds: parsedFilters.tagIds,
     createdBy: parsedFilters.createdBy,
     categoryId: parsedFilters.categoryId,
+    timeframe: parseTimeFrame(parsedFilters.timeframe),
     from: parsedFilters.from,
     to: parsedFilters.to,
   };

@@ -11,6 +11,9 @@ const Layout = () => {
           Cascade Event Manager
         </a>
         <div className="flex gap-4">
+          <a href="/events/create" className="text-sm hover:text-emerald-400">
+            + Create New Event
+          </a>
           {user ? (
             <>
               <span className="text-emerald-600">{user.full_name},</span>

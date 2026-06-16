@@ -29,6 +29,7 @@ export const eventFilterSchema = z.object({
     .union([z.literal("null"), z.coerce.number().positive()])
     .optional()
     .transform((input) => (input === "null" ? null : input)),
+  timeframe: z.enum(["upcoming", "past", "all"]).optional(),
   from: z.coerce.date().optional(),
   to: z.coerce.date().optional(),
 

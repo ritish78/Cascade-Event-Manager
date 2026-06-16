@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import api from "../../api/axios";
 import axios from "axios";
+import { InviteModal } from "../../components/ui/InviteModal";
 
 const EventDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -13,6 +14,8 @@ const EventDetailPage = () => {
   const [event, setEvent] = useState<EventDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   const [rsvpStatus, setRsvpStatus] = useState<"idle" | "loading" | "joined">("idle");
 
@@ -143,12 +146,20 @@ const EventDetailPage = () => {
               <h2 className="font-semibold text-lg mb-5">Participation</h2>
 
               {isOwner ? (
-                <button
-                  onClick={() => navigate(`/events/${event.event_id}/edit`)}
-                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-slate-50 rounded-xl py-3 font-medium transition cursor-pointer"
-                >
-                  Edit event
-                </button>
+                <>
+                  <button
+                    onClick={() => navigate(`/events/${event.event_id}/edit`)}
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-slate-50 rounded-xl py-3 font-medium transition cursor-pointer"
+                  >
+                    Edit Event
+                  </button>
+                  <button
+                    onClick={() => setShowInviteModal(true)}
+                    className="mt-2 w-full bg-emerald-600 hover:bg-emerald-700 text-slate-50 rounded-xl py-3 font-medium transition cursor-pointer"
+                  >
+                    Invite Members
+                  </button>
+                </>
               ) : (
                 <button
                   onClick={handleRSVP}
@@ -157,6 +168,9 @@ const EventDetailPage = () => {
                 >
                   {user?.id ? (isJoined ? "Joined" : "Join Event") : "Login to join"}
                 </button>
+              )}
+              {showInviteModal && (
+                <InviteModal eventId={event.event_id} onClose={() => setShowInviteModal(false)} />
               )}
 
               <div className="mt-6 pt-6 border-t border-slate-800">

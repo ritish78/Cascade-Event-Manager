@@ -157,8 +157,7 @@ const buildEventsFutureOrPastQuery = (
   userId: number | null,
   limit: number,
   page: number,
-  upcoming: boolean = true,
-  filters: EventFilters = {},
+  filters: EventFilters,
 ) => {
   const offset = (page - 1) * limit;
   /**
@@ -231,7 +230,6 @@ const buildEventsFutureOrPastQuery = (
         `ARRAY(SELECT t.name FROM event_tags et JOIN tags t ON t.id = et.tag_id WHERE et.event_id = e.id) AS tags`,
       ),
     )
-    .where("e.event_date", upcoming ? ">=" : "<", db.raw("CURRENT_DATE"))
     .where((builder) => {
       builder.where("e.is_private", false);
 
@@ -246,6 +244,15 @@ const buildEventsFutureOrPastQuery = (
     });
 
   const { tagIds, isPrivate, createdBy, categoryId, from, to, sort } = filters;
+
+  const timeframe = filters.timeframe ?? "upcoming";
+
+  if (timeframe === "upcoming") {
+    baseQuery.where("e.event_date", ">=", db.raw("CURRENT_DATE"));
+  } else if (timeframe === "past") {
+    baseQuery.where("e.event_date", "<", db.raw("CURRENT_DATE"));
+  }
+  //no need for querying for timeframe === "all" as we don't put a where clause in the query
 
   if (isPrivate !== undefined) {
     baseQuery.where("e.is_private", isPrivate);
@@ -281,7 +288,7 @@ const buildEventsFutureOrPastQuery = (
   }
 
   baseQuery
-    .orderBy("e.event_date", upcoming ? "asc" : "desc")
+    .orderBy("e.event_date", sort ?? "asc")
     .limit(limit)
     .offset(offset);
 
@@ -299,7 +306,9 @@ export const findUpcomingEvents = async (
   limit: number,
   page: number,
 ): Promise<PaginatedEvents> => {
-  const events: EventRow[] = await buildEventsFutureOrPastQuery(userId, limit, page);
+  const events: EventRow[] = await buildEventsFutureOrPastQuery(userId, limit, page, {
+    timeframe: "upcoming",
+  });
   //   console.log(buildEventsFutureOrPastQuery(userId, limit, page).toSQL().toNative());
   const totalEvents = Number(events[0]?.events_count ?? 0);
 
@@ -317,7 +326,7 @@ export const findPastEvents = async (
   limit: number,
   page: number,
 ): Promise<PaginatedEvents> => {
-  const events: EventRow[] = await buildEventsFutureOrPastQuery(userId, limit, page, false);
+  const events: EventRow[] = await buildEventsFutureOrPastQuery(userId, limit, page, { timeframe: "past" });
   const totalEvents = Number(events[0]?.events_count ?? 0);
 
   return { totalEvents, page, limit, totalPages: Math.ceil(totalEvents / limit), events };
@@ -501,7 +510,7 @@ export const filterEvents = async (
   page: number,
   filters: EventFilters,
 ): Promise<PaginatedEvents> => {
-  const events: EventRow[] = await buildEventsFutureOrPastQuery(userId, limit, page, true, filters);
+  const events: EventRow[] = await buildEventsFutureOrPastQuery(userId, limit, page, filters);
 
   const totalEvents = Number(events[0]?.events_count ?? 0);
 
