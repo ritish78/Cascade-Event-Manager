@@ -45,6 +45,13 @@ export const eventFilterSchema = z.object({
     ),
 });
 
+export const userInviteSchema = z
+  .object({
+    email: z.email("Valid email is required!"),
+  })
+  .strict();
+
 export type CreateEventInput = z.infer<typeof createEventSchema>;
 export type UpdateEventInput = z.infer<typeof updateEventSchema>;
 export type EventFilterInput = z.infer<typeof eventFilterSchema>;
+export type UserInviteInput = z.infer<typeof userInviteSchema>;

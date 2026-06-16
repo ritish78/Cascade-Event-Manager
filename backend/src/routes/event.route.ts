@@ -4,6 +4,7 @@ import {
   deleteEventController,
   eventByIdController,
   filterEventsController,
+  inviteUserToEventController,
   joinEventController,
   pastEventsController,
   upcomingEventsController,
@@ -18,6 +19,7 @@ router.get("/upcoming", optionalAuthenticate, upcomingEventsController);
 router.get("/past", optionalAuthenticate, pastEventsController);
 router.get("/:id", optionalAuthenticate, eventByIdController);
 router.post("/:id/join", authenticate, joinEventController);
+router.post("/:id/invite", authenticate, inviteUserToEventController);
 router.delete("/:id", authenticate, deleteEventController);
 router.patch("/:id", authenticate, updateEventController);
 router.get("/", optionalAuthenticate, filterEventsController);

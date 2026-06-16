@@ -13,9 +13,11 @@ import {
   updateEventWithTags,
   updateUserEventStatus,
 } from "src/repository/event.repository";
-import { BadRequestError, ForbiddenError, NotFoundError } from "src/utils/error";
+import { AuthError, BadRequestError, ForbiddenError, NotFoundError } from "src/utils/error";
 import { Event, EventDetails, EventFilters, PaginatedEvents } from "src/types/event.types";
 import { UpdateEventInput } from "src/schema/event.schema";
+import { findUserByEmail } from "src/repository/auth.repository";
+import { User } from "src/types/user.types";
 
 export const createNewEvent = async (
   userId: number,
@@ -208,7 +210,12 @@ export const filterEventsByTagsAndEventType = async (
   return filterEvents(userId, limit, page, filters);
 };
 
-export const joinUserToEvent = async (eventId: number, userId: number) => {
+/**
+ * @param eventId       number - eventid for the user to join
+ * @param userId        number - userid to join to the event
+ * @returns             Promise<void>
+ */
+export const joinUserToEvent = async (eventId: number, userId: number): Promise<void> => {
   const event = await findEventById(eventId);
 
   if (!event) {
@@ -243,4 +250,54 @@ export const joinUserToEvent = async (eventId: number, userId: number) => {
   }
 
   await insertEventMember(eventId, userId, userId, "attendee", "accepted");
+};
+
+/**
+ * @param eventId       number - id of the event to invite user
+ * @param inviterId     number - id of the user who is inviting another user
+ * @param email         string - email of the user to invite
+ */
+export const inviteUserToEvent = async (eventId: number, inviterId: number, email: string): Promise<User> => {
+  const event = await findEventById(eventId);
+
+  if (!event) {
+    throw new NotFoundError(
+      `You don't have permission to invite members or the event of id ${eventId} does not exists!`,
+    );
+  }
+
+  //Currently, we are only providing feature for event creator to invite other members to their event
+  if (event.created_by !== inviterId) {
+    throw new AuthError("Only the event creator has the permission to invite memebers!");
+  }
+
+  const userToInvite = await findUserByEmail(email);
+
+  if (!userToInvite) {
+    throw new NotFoundError(`The user of the provided email: ${email} does not exists!`);
+  }
+
+  if (event.created_by === userToInvite.id) {
+    throw new BadRequestError("You are already the part of the event!");
+  }
+
+  const isUserAlreadyPartOfEvent = await findUserIsPartOfEvent(eventId, userToInvite.id);
+
+  if (isUserAlreadyPartOfEvent) {
+    if (isUserAlreadyPartOfEvent.status === "accepted") {
+      throw new BadRequestError(`${userToInvite.full_name} is already part of the event!`);
+    } else if (isUserAlreadyPartOfEvent.status === "invited") {
+      throw new BadRequestError(`${userToInvite.full_name} is already invited!`);
+    } else if (isUserAlreadyPartOfEvent.status === "declined") {
+      //if the user that we are inviting has declined already,
+      //we can still invite them to the event again
+      await updateUserEventStatus(eventId, userToInvite.id, "invited");
+
+      return userToInvite;
+    }
+  }
+
+  await insertEventMember(eventId, userToInvite.id, inviterId, "attendee", "invited");
+
+  return userToInvite;
 };

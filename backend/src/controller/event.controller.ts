@@ -5,6 +5,8 @@ import {
   eventFilterSchema,
   UpdateEventInput,
   updateEventSchema,
+  UserInviteInput,
+  userInviteSchema,
 } from "src/schema/event.schema";
 import {
   createNewEvent,
@@ -13,6 +15,7 @@ import {
   getEventWithDetailsById,
   getPastEvents,
   getUpcomingEvents,
+  inviteUserToEvent,
   joinUserToEvent,
   updateEventByItsId,
 } from "src/services/event.services";
@@ -224,11 +227,31 @@ export const joinEventController = async (req: Request, res: Response): Promise<
 
   if (!req.user || !req.user.id) {
     throw new NotFoundError(
-      `You don't have permission to update the event or the event of id ${eventId} does not exists!`,
+      `You don't have permission to join the event or the event of id ${eventId} does not exists!`,
     );
   }
 
   await joinUserToEvent(eventId, req.user.id);
 
   res.status(200).send({ message: "You joined the event!" });
+};
+
+export const inviteUserToEventController = async (req: Request, res: Response) => {
+  const eventId = Number(req.params.id);
+
+  if (!eventId || isNaN(eventId)) {
+    throw new BadRequestError("Invalid Event ID provided!");
+  }
+
+  if (!req.user || !req.user.id) {
+    throw new NotFoundError(
+      `You don't have permission to invite other users or the event of id ${eventId} does not exists!`,
+    );
+  }
+
+  const userBody: UserInviteInput = userInviteSchema.parse(req.body);
+
+  const invitedUser = await inviteUserToEvent(eventId, req.user.id, userBody.email);
+
+  res.status(200).send({ message: `Invited ${invitedUser.full_name} successfully!` });
 };

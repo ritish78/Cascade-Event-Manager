@@ -526,7 +526,7 @@ export const findUserIsPartOfEvent = async (eventId: number, userId: number): Pr
 export const updateUserEventStatus = async (
   eventId: number,
   userId: number,
-  status: "accepted" | "declined",
+  status: "accepted" | "declined" | "invited",
 ) => {
   await db("event_members")
     .where({ event_id: eventId, user_id: userId })
