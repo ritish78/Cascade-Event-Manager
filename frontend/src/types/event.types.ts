@@ -32,3 +32,21 @@ export interface PaginatedEvents {
   totalPages: number;
   events: EventRow[];
 }
+
+export interface EventFormData {
+  name: string;
+  description: string;
+  location: string;
+  isPrivate: boolean;
+  eventDate: string;
+  categoryId: number;
+  tagIds: number[];
+}
+
+export interface EventFormProps {
+  initialValues: EventFormData;
+  submitLabel: string;
+  isLoading?: boolean;
+  error?: string | null;
+  onSubmit: (data: EventFormData) => Promise<void>;
+}
