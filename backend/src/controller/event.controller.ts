@@ -15,13 +15,14 @@ import {
   getEventWithDetailsById,
   getPastEvents,
   getUpcomingEvents,
+  getUserMemberEvents,
   inviteUserToEvent,
   joinUserToEvent,
   updateEventByItsId,
 } from "src/services/event.services";
 import { EventFilters } from "src/types/event.types";
 import { AuthError, BadRequestError, NotFoundError } from "src/utils/error";
-import { parseTimeFrame } from "src/utils/parseTimeframe";
+import { parseMemberStatus, parseTimeFrame } from "src/utils/parseTimeframe";
 
 /**
  * @route           /api/v1/events
@@ -288,6 +289,31 @@ export const getAllEventsOfUserController = async (req: Request, res: Response) 
   };
 
   const events = await filterEventsByTagsAndEventType(req.user.id, limit, page, filter);
+
+  res.status(200).send(events);
+};
+
+/**
+ * @route               /api/v1/events/joined
+ * @method              GET
+ * @access              authenticated
+ */
+export const getUserJoinedEventsController = async (req: Request, res: Response): Promise<void> => {
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+
+  if (isNaN(page) || isNaN(limit)) {
+    throw new BadRequestError("Invalid request query provided!");
+  }
+
+  if (!req.user || !req.user.id) {
+    throw new NotFoundError(`You need to login first!`);
+  }
+
+  const timeframe = parseTimeFrame(req.query.timeframe) ?? "upcoming";
+  const status = parseMemberStatus(req.query.status);
+
+  const events = await getUserMemberEvents(req.user.id, page, limit, timeframe, status);
 
   res.status(200).send(events);
 };

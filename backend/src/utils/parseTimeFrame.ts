@@ -10,3 +10,11 @@ export const parseTimeFrame = (option: unknown): "upcoming" | "past" | "all" | u
 
   return undefined;
 };
+
+export const parseMemberStatus = (option: unknown): "accepted" | "invited" | "declined" | undefined => {
+  if (option === "accepted") return "accepted";
+  if (option === "invited") return "invited";
+  if (option === "declined") return "declined";
+
+  return undefined;
+};

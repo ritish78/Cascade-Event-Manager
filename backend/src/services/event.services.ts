@@ -6,6 +6,7 @@ import {
   findPastEvents,
   findUpcomingEvents,
   findUserIsPartOfEvent,
+  findUserMemberEvents,
   insertEvent,
   insertEventMember,
   insertEventTags,
@@ -300,4 +301,21 @@ export const inviteUserToEvent = async (eventId: number, inviterId: number, emai
   await insertEventMember(eventId, userToInvite.id, inviterId, "attendee", "invited");
 
   return userToInvite;
+};
+
+/**
+ * @param userId            number- id of the user to fetch the events that they are part of
+ * @param page              number - page number the user is currently in
+ * @param limit             number - number of events to fetch
+ * @param timeframe         upcoming | past | all
+ * @param status            accepted | invited | declined
+ */
+export const getUserMemberEvents = async (
+  userId: number,
+  page: number,
+  limit: number,
+  timeframe: "upcoming" | "past" | "all",
+  status?: "accepted" | "invited" | "declined",
+) => {
+  return findUserMemberEvents(userId, page, limit, timeframe, status);
 };

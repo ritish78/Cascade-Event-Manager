@@ -541,3 +541,68 @@ export const updateUserEventStatus = async (
     .where({ event_id: eventId, user_id: userId })
     .update({ status, updated_at: new Date() });
 };
+
+/**
+ * @param userId            number - id of the user
+ * @param limit             number - number of events to fetch
+ * @param page              number - page that the user is currently in
+ * @param timeframe         upcoming | past | all
+ * @param status            accepted | invited | declined
+ */
+export const findUserMemberEvents = async (
+  userId: number,
+  page: number,
+  limit: number,
+  timeframe: "upcoming" | "past" | "all",
+  status?: "accepted" | "invited" | "declined",
+  sort?: "asc" | "desc",
+): Promise<PaginatedEvents> => {
+  const offset = (page - 1) * limit;
+
+  const baseQuery = db("events AS e")
+    .join("users AS u", "e.created_by", "u.id")
+    .leftJoin("categories AS c", "c.id", "e.category_id")
+    .join("event_members AS em", "em.event_id", "e.id")
+    .select(
+      "e.id AS event_id",
+      "e.name AS event_name",
+      "e.description",
+      "e.location",
+      "e.is_private",
+      "e.event_date",
+      "e.created_at",
+      "e.created_by as creator_id",
+      "u.full_name as creator_name",
+      "c.id AS category_id",
+      "c.name AS category_name",
+      "em.status AS member_status",
+      "em.role AS member_role",
+      db.raw("COUNT(*) OVER() AS events_count"),
+      db.raw(
+        `ARRAY(SELECT t.name FROM event_tags et JOIN tags t ON t.id = et.tag_id WHERE et.event_id = e.id) AS tags`,
+      ),
+    )
+    .where("em.user_id", userId)
+    .where("em.role", "attendee");
+
+  if (status !== undefined) {
+    baseQuery.where("em.status", status);
+  }
+
+  //same as in buildEventsFutureOrPastQuery
+  if (timeframe === "upcoming") {
+    baseQuery.where("e.event_date", ">=", db.raw("CURRENT_DATE"));
+  } else if (timeframe === "past") {
+    baseQuery.where("e.event_date", "<", db.raw("CURRENT_DATE"));
+  }
+
+  baseQuery
+    .orderBy("e.event_date", sort ?? "asc")
+    .limit(limit)
+    .offset(offset);
+
+  const events: EventRow[] = await baseQuery;
+  const totalEvents = Number(events[0]?.events_count ?? 0);
+
+  return { totalEvents, page, limit, totalPages: Math.ceil(totalEvents / limit), events };
+};
