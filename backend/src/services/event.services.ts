@@ -5,13 +5,15 @@ import {
   findEventDetailsById,
   findPastEvents,
   findUpcomingEvents,
+  findUserIsPartOfEvent,
   insertEvent,
   insertEventMember,
   insertEventTags,
   insertEventWithMembersAndTags,
   updateEventWithTags,
+  updateUserEventStatus,
 } from "src/repository/event.repository";
-import { ForbiddenError, NotFoundError } from "src/utils/error";
+import { BadRequestError, ForbiddenError, NotFoundError } from "src/utils/error";
 import { Event, EventDetails, EventFilters, PaginatedEvents } from "src/types/event.types";
 import { UpdateEventInput } from "src/schema/event.schema";
 
@@ -204,4 +206,41 @@ export const filterEventsByTagsAndEventType = async (
   filters: EventFilters,
 ): Promise<PaginatedEvents> => {
   return filterEvents(userId, limit, page, filters);
+};
+
+export const joinUserToEvent = async (eventId: number, userId: number) => {
+  const event = await findEventById(eventId);
+
+  if (!event) {
+    throw new NotFoundError(
+      `You don't have permission to join the event or the event of id ${eventId} does not exists!`,
+    );
+  }
+
+  //We could add a check to see if the current user is the creator
+  //event.created_by === userId
+  //but we don't need to do so, because we will have another check below
+  //which results in the same result.
+
+  const isUserAlreadyPartOfEvent = await findUserIsPartOfEvent(eventId, userId);
+
+  if (isUserAlreadyPartOfEvent) {
+    if (isUserAlreadyPartOfEvent.status === "accepted") {
+      throw new BadRequestError("You are already part of the event!");
+    } else if (isUserAlreadyPartOfEvent.status === "invited") {
+      await updateUserEventStatus(eventId, userId, "accepted");
+      return;
+    } else if (isUserAlreadyPartOfEvent.status === "declined") {
+      await updateUserEventStatus(eventId, userId, "accepted");
+      return;
+    }
+  }
+
+  //after all the previous checks, a user can request to join an event even if
+  //it is a private event and the user isn't invited. So, need to make another check.
+  if (event.is_private) {
+    throw new ForbiddenError("This is a private event. You must be invited first to join!");
+  }
+
+  await insertEventMember(eventId, userId, userId, "attendee", "accepted");
 };

@@ -58,3 +58,14 @@ export interface EventFilters {
   to?: Date | string;
   sort?: string; //we have come full circle. /upcoming and /past.
 }
+
+export interface EventMember {
+  id: number;
+  event_id: number;
+  user_id: number;
+  invited_by: number;
+  role: "organizer" | "attendee";
+  status: "invited" | "accepted" | "declined";
+  created_at: string;
+  updated_at: string;
+}

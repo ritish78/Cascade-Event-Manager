@@ -13,6 +13,7 @@ import {
   getEventWithDetailsById,
   getPastEvents,
   getUpcomingEvents,
+  joinUserToEvent,
   updateEventByItsId,
 } from "src/services/event.services";
 import { EventFilters } from "src/types/event.types";
@@ -207,4 +208,27 @@ export const filterEventsController = async (req: Request, res: Response) => {
   const events = await filterEventsByTagsAndEventType(userId, limit, page, filters);
 
   res.status(200).send(events);
+};
+
+/**
+ * @route           /api/v1/events/:id/join
+ * @method          POST
+ * @access          Authenticated
+ */
+export const joinEventController = async (req: Request, res: Response): Promise<void> => {
+  const eventId = Number(req.params.id);
+
+  if (!eventId || isNaN(eventId)) {
+    throw new BadRequestError("Invalid Event ID provided!");
+  }
+
+  if (!req.user || !req.user.id) {
+    throw new NotFoundError(
+      `You don't have permission to update the event or the event of id ${eventId} does not exists!`,
+    );
+  }
+
+  await joinUserToEvent(eventId, req.user.id);
+
+  res.status(200).send({ message: "You joined the event!" });
 };

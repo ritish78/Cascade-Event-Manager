@@ -48,7 +48,6 @@ const EventDetailPage = () => {
 
     try {
       await api.post(`/events/${id}/join`);
-      setRsvpStatus("joined");
     } catch {
       setRsvpStatus("idle");
     }
@@ -73,6 +72,7 @@ const EventDetailPage = () => {
   }
 
   const isOwner = user?.id === event.creator_id;
+  const isJoined = event?.members?.some((m) => m.user_id === user?.id && m.status === "accepted");
 
   return (
     <div className="min-h-screen bg-transparent">
@@ -152,16 +152,10 @@ const EventDetailPage = () => {
               ) : (
                 <button
                   onClick={handleRSVP}
-                  disabled={rsvpStatus === "loading" || rsvpStatus === "joined"}
+                  disabled={rsvpStatus === "loading" || rsvpStatus === "joined" || isJoined}
                   className="w-full bg-emerald-600 hover:bg-emerald-700 text-slate-50 rounded-xl py-3 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
-                  {rsvpStatus === "joined"
-                    ? "Joined"
-                    : rsvpStatus === "loading"
-                      ? "Joining..."
-                      : user
-                        ? "Join event"
-                        : "Login to join"}
+                  {user?.id ? (isJoined ? "Joined" : "Join Event") : "Login to join"}
                 </button>
               )}
 

@@ -1,5 +1,12 @@
 import db from "src/db";
-import { Event, EventDetails, EventFilters, EventRow, PaginatedEvents } from "../types/event.types";
+import {
+  Event,
+  EventDetails,
+  EventFilters,
+  EventMember,
+  EventRow,
+  PaginatedEvents,
+} from "../types/event.types";
 import { Knex } from "knex";
 import { UpdateEventInput } from "src/schema/event.schema";
 
@@ -499,4 +506,29 @@ export const filterEvents = async (
   const totalEvents = Number(events[0]?.events_count ?? 0);
 
   return { totalEvents, page, limit, totalPages: Math.ceil(totalEvents / limit), events };
+};
+
+/**
+ * @param eventId           number - id of the event
+ * @param userId            number - id of the user
+ */
+export const findUserIsPartOfEvent = async (eventId: number, userId: number): Promise<EventMember> => {
+  const userEvent = await db("event_members").where({ event_id: eventId, user_id: userId }).first();
+
+  return userEvent ?? null;
+};
+
+/**
+ * @param eventId           number - id of the event
+ * @param userId            number - id of the user
+ * @param status            string - accepted or declined
+ */
+export const updateUserEventStatus = async (
+  eventId: number,
+  userId: number,
+  status: "accepted" | "declined",
+) => {
+  await db("event_members")
+    .where({ event_id: eventId, user_id: userId })
+    .update({ status, updated_at: new Date() });
 };
