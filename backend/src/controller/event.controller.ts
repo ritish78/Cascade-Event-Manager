@@ -7,6 +7,8 @@ import {
   updateEventSchema,
   UserInviteInput,
   userInviteSchema,
+  UserResponseToInvitation,
+  userResponseToInvitation,
 } from "src/schema/event.schema";
 import {
   createNewEvent,
@@ -18,6 +20,7 @@ import {
   getUserMemberEvents,
   inviteUserToEvent,
   joinUserToEvent,
+  respondToEventInvitation,
   updateEventByItsId,
 } from "src/services/event.services";
 import { EventFilters } from "src/types/event.types";
@@ -307,7 +310,7 @@ export const getUserJoinedEventsController = async (req: Request, res: Response)
   }
 
   if (!req.user || !req.user.id) {
-    throw new NotFoundError(`You need to login first!`);
+    throw new NotFoundError("You need to login first!");
   }
 
   const timeframe = parseTimeFrame(req.query.timeframe) ?? "upcoming";
@@ -316,4 +319,27 @@ export const getUserJoinedEventsController = async (req: Request, res: Response)
   const events = await getUserMemberEvents(req.user.id, page, limit, timeframe, status);
 
   res.status(200).send(events);
+};
+
+export const respondToEventInvitationController = async (req: Request, res: Response): Promise<void> => {
+  const eventId = Number(req.params.id);
+
+  if (!eventId || isNaN(eventId)) {
+    throw new BadRequestError("Invalid Event ID provided!");
+  }
+
+  if (!req.user || !req.user.id) {
+    throw new NotFoundError("You need to login first!");
+  }
+
+  const userResponse: UserResponseToInvitation = userResponseToInvitation.parse(req.body);
+
+  await respondToEventInvitation(eventId, req.user.id, userResponse.response);
+
+  const messageToSend =
+    userResponse.response === "accepted"
+      ? "You have accepted the invitation!"
+      : "You have declined the invitation!";
+
+  res.status(200).send({ message: messageToSend });
 };

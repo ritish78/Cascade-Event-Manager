@@ -319,3 +319,49 @@ export const getUserMemberEvents = async (
 ) => {
   return findUserMemberEvents(userId, page, limit, timeframe, status);
 };
+
+/**
+ * @param eventId       number - event id to respond
+ * @param userId        number - user id of the responder
+ * @param response      accepted | declined
+ */
+export const respondToEventInvitation = async (
+  eventId: number,
+  userId: number,
+  response: "accepted" | "declined",
+): Promise<void> => {
+  const event = await findEventById(eventId);
+
+  if (!event) {
+    throw new NotFoundError(
+      `You don't have permission to respond to the event of id ${eventId} does not exists!`,
+    );
+  }
+
+  const userMembership = await findUserIsPartOfEvent(eventId, userId);
+
+  if (!userMembership) {
+    throw new BadRequestError("You have not been invited in this event to respond!");
+  }
+
+  //to check the user's role, we are using userMembership.role
+  //we can also use userMembership.invited_by but, a user can request to join
+  //an event and the row will have their userId. so, doing this easier.
+  if (userMembership.role === "organizer") {
+    throw new BadRequestError("You are already the organizer of this event!");
+  }
+
+  //checking both membership.status and response. We can modify it later to say
+  //if userMembership.status === "accepted" && response === "declined" to
+  //update the row to be declined even if the user has already accepted the invitation
+  //currently, our mvp does not need that feature.
+  if (userMembership.status === "accepted" && response === "accepted") {
+    throw new BadRequestError("You have already accepted the invitation to the event!");
+  }
+
+  if (userMembership.status === "declined" && response === "declined") {
+    throw new BadRequestError("You have already declined the inviation to the event!");
+  }
+
+  await updateUserEventStatus(eventId, userId, response);
+};

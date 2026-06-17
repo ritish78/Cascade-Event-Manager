@@ -52,7 +52,14 @@ export const userInviteSchema = z
   })
   .strict();
 
+export const userResponseToInvitation = z
+  .object({
+    response: z.enum(["accepted", "declined"]),
+  })
+  .strict();
+
 export type CreateEventInput = z.infer<typeof createEventSchema>;
 export type UpdateEventInput = z.infer<typeof updateEventSchema>;
 export type EventFilterInput = z.infer<typeof eventFilterSchema>;
 export type UserInviteInput = z.infer<typeof userInviteSchema>;
+export type UserResponseToInvitation = z.infer<typeof userResponseToInvitation>;
