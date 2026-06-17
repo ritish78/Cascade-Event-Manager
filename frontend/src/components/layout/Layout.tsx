@@ -29,7 +29,7 @@ const Layout = () => {
           )}
           {user ? (
             <>
-              <span className="text-emerald-600">{user.full_name},</span>
+              <span className="text-emerald-600">{user.fullName},</span>
               <button onClick={logout} className="text-sm text-red-400 hover:underline cursor-pointer">
                 Logout!
               </button>
@@ -68,7 +68,7 @@ const Layout = () => {
           )}
           {user ? (
             <>
-              <span className="text-emerald-600">{user.full_name}</span>
+              <span className="text-emerald-600">{user.fullName}</span>
               <button onClick={logout} className="text-sm text-red-400 hover:underline cursor-pointer">
                 Logout!
               </button>

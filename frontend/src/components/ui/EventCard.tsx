@@ -12,10 +12,10 @@ const EventCard = ({ event, onClick }: EventCardProps) => {
       className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6 hover:border-emerald-700 transition cursor-pointer flex flex-col gap-4"
     >
       <div className="flex items-start justify-between gap-3">
-        <h2 className="text-lg font-semibold text-slate-100 leading-snug">{event.event_name}</h2>
+        <h2 className="text-lg font-semibold text-slate-100 leading-snug">{event.eventName}</h2>
 
         <span className="shrink-0 text-xs uppercase tracking-wide border border-emerald-700 px-2 py-0.5 rounded-full text-slate-50">
-          {event.is_private ? "Private" : "Public"}
+          {event.isPrivate ? "Private" : "Public"}
         </span>
       </div>
 
@@ -43,7 +43,7 @@ const EventCard = ({ event, onClick }: EventCardProps) => {
       <div className="mt-auto pt-4 border-t border-slate-800 grid grid-cols-2 gap-2">
         <div>
           <p className="text-xs text-emerald-500 mb-0.5">Date</p>
-          <p className="text-sm text-slate-300">{new Date(event.event_date).toDateString()}</p>
+          <p className="text-sm text-slate-300">{new Date(event.eventDate).toDateString()}</p>
         </div>
 
         <div>
@@ -53,7 +53,7 @@ const EventCard = ({ event, onClick }: EventCardProps) => {
 
         <div className="col-span-2">
           <p className="text-xs text-emerald-500 mb-0.5">Organizer</p>
-          <p className="text-sm text-slate-300">{event.creator_name}</p>
+          <p className="text-sm text-slate-300">{event.creatorName}</p>
         </div>
       </div>
     </div>

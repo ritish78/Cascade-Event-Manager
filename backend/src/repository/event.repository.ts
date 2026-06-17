@@ -9,6 +9,7 @@ import {
 } from "../types/event.types";
 import { Knex } from "knex";
 import { UpdateEventInput } from "src/schema/event.schema";
+import { toEventDTO, toEventRowDTO } from "src/utils/eventDTO";
 
 type QueryBuilder = Knex.Transaction | Knex;
 
@@ -312,7 +313,13 @@ export const findUpcomingEvents = async (
   //   console.log(buildEventsFutureOrPastQuery(userId, limit, page).toSQL().toNative());
   const totalEvents = Number(events[0]?.events_count ?? 0);
 
-  return { totalEvents, page, limit, totalPages: Math.ceil(totalEvents / limit), events };
+  return {
+    totalEvents,
+    page,
+    limit,
+    totalPages: Math.ceil(totalEvents / limit),
+    events: events.map(toEventRowDTO),
+  };
 };
 
 /**
@@ -329,7 +336,13 @@ export const findPastEvents = async (
   const events: EventRow[] = await buildEventsFutureOrPastQuery(userId, limit, page, { timeframe: "past" });
   const totalEvents = Number(events[0]?.events_count ?? 0);
 
-  return { totalEvents, page, limit, totalPages: Math.ceil(totalEvents / limit), events };
+  return {
+    totalEvents,
+    page,
+    limit,
+    totalPages: Math.ceil(totalEvents / limit),
+    events: events.map(toEventRowDTO),
+  };
 };
 
 /**
@@ -514,7 +527,13 @@ export const filterEvents = async (
 
   const totalEvents = Number(events[0]?.events_count ?? 0);
 
-  return { totalEvents, page, limit, totalPages: Math.ceil(totalEvents / limit), events };
+  return {
+    totalEvents,
+    page,
+    limit,
+    totalPages: Math.ceil(totalEvents / limit),
+    events: events.map(toEventRowDTO),
+  };
 };
 
 /**
@@ -604,5 +623,11 @@ export const findUserMemberEvents = async (
   const events: EventRow[] = await baseQuery;
   const totalEvents = Number(events[0]?.events_count ?? 0);
 
-  return { totalEvents, page, limit, totalPages: Math.ceil(totalEvents / limit), events };
+  return {
+    totalEvents,
+    page,
+    limit,
+    totalPages: Math.ceil(totalEvents / limit),
+    events: events.map(toEventRowDTO),
+  };
 };

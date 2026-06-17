@@ -10,3 +10,11 @@ export interface User {
 }
 
 export type PublicUser = Omit<User, "password" | "created_at" | "updated_at">;
+
+export interface UserDTO {
+  id: number;
+  fullName: string;
+  email: string;
+  isVerified: boolean;
+  isActive: boolean;
+}

@@ -144,9 +144,9 @@ export const UserEventsPage = ({ endpoint, title, showStatusFilter = false }: Us
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {events.map((event) => (
               <EventCard
-                key={event.event_id}
+                key={event.eventId}
                 event={event}
-                onClick={() => navigate(`/events/${event.event_id}`)}
+                onClick={() => navigate(`/events/${event.eventId}`)}
               />
             ))}
           </div>

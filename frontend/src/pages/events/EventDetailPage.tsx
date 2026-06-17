@@ -75,11 +75,11 @@ const EventDetailPage = () => {
     );
   }
 
-  const userMembership = user ? event.members.find((m) => m.user_id === user.id) : null;
+  const userMembership = user ? event.members.find((m) => m.userId === user.id) : null;
 
   const handleRespond = async (response: "accepted" | "declined") => {
     try {
-      await api.patch(`/events/${event.event_id}/respond`, { response });
+      await api.patch(`/events/${event.eventId}/respond`, { response });
       window.location.reload();
     } catch (err) {
       if (axios.isAxiosError(err)) {
@@ -102,8 +102,8 @@ const EventDetailPage = () => {
     }
   };
 
-  const isOwner = user?.id === event.creator_id;
-  const isJoined = event?.members?.some((m) => m.user_id === user?.id && m.status === "accepted");
+  const isOwner = user?.id === event.creatorId;
+  const isJoined = event?.members?.some((m) => m.userId === user?.id && m.status === "accepted");
 
   return (
     <div className="min-h-screen bg-transparent">
@@ -111,7 +111,7 @@ const EventDetailPage = () => {
         <div className="mb-10 border-b border-b-emerald-800 pb-8">
           <div className="flex items-center justify-between gap-4 mb-4">
             <div>
-              <h1 className="text-4xl font-bold tracking-tight">{event.event_name}</h1>
+              <h1 className="text-4xl font-bold tracking-tight">{event.eventName}</h1>
 
               {event.category_name && (
                 <p className="text-emerald-400 mt-2">Category: {event.category_name}</p>
@@ -119,14 +119,14 @@ const EventDetailPage = () => {
             </div>
 
             <span className="text-xs uppercase tracking-wide border border-emerald-700 px-3 py-1 rounded-full text-slate-50">
-              {event.is_private ? "Private" : "Public"}
+              {event.isPrivate ? "Private" : "Public"}
             </span>
           </div>
 
           <div className="grid sm:grid-cols-3 gap-5 mt-8">
             <div>
               <p className="text-sm text-emerald-500 mb-1">Date</p>
-              <p className="text-slate-200">{new Date(event.event_date).toDateString()}</p>
+              <p className="text-slate-200">{new Date(event.eventDate).toDateString()}</p>
             </div>
 
             <div>
@@ -136,7 +136,7 @@ const EventDetailPage = () => {
 
             <div>
               <p className="text-sm text-emerald-500 mb-1">Organizer</p>
-              <p className="text-slate-200">{event.creator_name}</p>
+              <p className="text-slate-200">{event.creatorName}</p>
             </div>
           </div>
         </div>
@@ -177,7 +177,7 @@ const EventDetailPage = () => {
                 <>
                   <div className="flex gap-2">
                     <button
-                      onClick={() => navigate(`/events/${event.event_id}/edit`)}
+                      onClick={() => navigate(`/events/${event.eventId}/edit`)}
                       className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-slate-50 rounded-xl py-3 font-medium transition cursor-pointer"
                     >
                       Edit Event
@@ -239,7 +239,7 @@ const EventDetailPage = () => {
               )}
               {showInviteModal && (
                 <InviteModal
-                  eventId={event.event_id}
+                  eventId={event.eventId}
                   onClose={() => {
                     setShowInviteModal(false);
                     window.location.reload();
@@ -258,11 +258,11 @@ const EventDetailPage = () => {
                   <div className="space-y-3">
                     {event.members.map((mem) => (
                       <div
-                        key={mem.user_id}
+                        key={mem.userId}
                         className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-3"
                       >
                         <div>
-                          <p className="text-sm font-medium text-slate-200">{mem.full_name}</p>
+                          <p className="text-sm font-medium text-slate-200">{mem.fullName}</p>
 
                           <p className="text-xs text-slate-500 capitalize">{mem.role}</p>
                         </div>

@@ -13,6 +13,19 @@ export interface Event {
   updated_at: Date;
 }
 
+export interface EventDTO {
+  id: number;
+  name: string;
+  description: string;
+  location: string;
+  isPrivate: boolean;
+  createdBy: number;
+  categoryId: number | null;
+  eventDate: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface Member {
   user_id: number;
   full_name: string;
@@ -36,8 +49,58 @@ export interface EventDetails {
   members: Member[];
 }
 
-export interface EventRow extends EventDetails {
+export interface MemberDTO {
+  userId: number;
+  fullName: string;
+  status: "invited" | "accepted" | "declined";
+  role: "organizer" | "attendee";
+}
+
+export interface EventDetailsDTO {
+  eventId: number;
+  eventName: string;
+  description: string;
+  location: string;
+  isPrivate: boolean;
+  eventDate: string;
+  createdAt: string;
+  creatorId: number;
+  creatorName: string;
+  categoryId: number | null;
+  categoryName: string | null;
+  tags: Tag[];
+  members: MemberDTO[];
+}
+
+export interface EventRow {
+  event_id: number;
+  event_name: string;
+  description: string;
+  location: string;
+  is_private: boolean;
+  event_date: string;
+  created_at: string;
+  creator_id: number;
+  creator_name: string;
+  category_id: number | null;
+  category_name: string | null;
+  tags: string[];
   events_count: string;
+}
+
+export interface EventRowDTO {
+  eventId: number;
+  eventName: string;
+  description: string;
+  location: string;
+  isPrivate: boolean;
+  eventDate: string;
+  createdAt: string;
+  creatorId: number;
+  creatorName: string;
+  categoryId: number | null;
+  categoryName: string | null;
+  tags: string[];
 }
 
 export interface PaginatedEvents {
@@ -45,7 +108,7 @@ export interface PaginatedEvents {
   page: number;
   limit: number;
   totalPages: number;
-  events: EventRow[];
+  events: EventRowDTO[];
 }
 
 //we have these event search filters

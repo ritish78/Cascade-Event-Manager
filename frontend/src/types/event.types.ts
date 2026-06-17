@@ -1,30 +1,42 @@
 import type { Tag } from "./tag.types";
 
 export interface Member {
-  user_id: number;
-  full_name: string;
+  userId: number;
+  fullName: string;
   status: MemberStatus;
   role: "organizer" | "attendee";
 }
 
 export interface EventDetails {
-  event_id: number;
-  event_name: string;
+  eventId: number;
+  eventName: string;
   description: string;
   location: string;
-  is_private: boolean;
-  event_date: string;
-  created_at: string;
-  creator_id: number;
-  creator_name: string;
-  category_id: number | null; //shouldn't be null since we are getting category_id from category table after joining with events table
+  isPrivate: boolean;
+  eventDate: string;
+  createdAt: string;
+  creatorId: number;
+  creatorName: string;
+  categoryId: number | null; //shouldn't be null since we are getting category_id from category table after joining with events table
   category_name: string | null;
   tags: Tag[];
   members: Member[];
 }
 
-export interface EventRow extends EventDetails {
-  events_count: string;
+export interface EventRow {
+  eventId: number;
+  eventName: string;
+  description: string;
+  location: string;
+  isPrivate: boolean;
+  eventDate: string;
+  createdAt: string;
+  creatorId: number;
+  creatorName: string;
+  categoryId: number | null;
+  category_name: string | null;
+  tags: string[];
+  members: Member[];
 }
 
 export interface PaginatedEvents {

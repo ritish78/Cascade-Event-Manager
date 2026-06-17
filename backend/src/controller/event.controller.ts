@@ -30,7 +30,7 @@ import { parseMemberStatus, parseTimeFrame } from "src/utils/parseTimeframe";
 /**
  * @route           /api/v1/events
  * @method          POST
- * @access          Autheticated
+ * @access          Authenticated
  */
 export const createEventController = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -53,7 +53,7 @@ export const createEventController = async (req: Request, res: Response, next: N
       userInput.tagIds,
     );
 
-    res.status(201).send({ message: `New Event created!`, event_id: event.id });
+    res.status(201).send({ message: `New Event created!`, eventId: event.id });
   } catch (error) {
     next(error);
   }
@@ -113,12 +113,6 @@ export const eventByIdController = async (req: Request, res: Response) => {
   }
 
   const event = await getEventWithDetailsById(eventId, userId);
-
-  if (!event) {
-    throw new NotFoundError(
-      `You don't have the permission to view the event or the event of id ${eventId} does not exists!`,
-    );
-  }
 
   res.status(200).send(event);
 };

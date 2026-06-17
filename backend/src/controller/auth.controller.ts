@@ -106,7 +106,7 @@ export const registerController = async (req: Request, res: Response, next: Next
   try {
     const userInput: RegisterInput = registerSchema.parse(req.body);
 
-    await registerUser(userInput.full_name, userInput.email, userInput.password, userInput.confirm_password);
+    await registerUser(userInput.fullName, userInput.email, userInput.password, userInput.confirmPassword);
 
     res.status(201).send({ message: "Registered successfully!" });
   } catch (error) {

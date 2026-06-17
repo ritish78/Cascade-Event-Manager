@@ -9,7 +9,7 @@ export const CreateEventPage = () => {
   const handleCreateEvent = async (data: EventFormData) => {
     const response = await api.post("/events", data);
 
-    navigate(`/events/${response.data.event_id}`);
+    navigate(`/events/${response.data.eventId}`);
   };
 
   return (

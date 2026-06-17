@@ -15,10 +15,11 @@ import {
   updateUserEventStatus,
 } from "src/repository/event.repository";
 import { AuthError, BadRequestError, ForbiddenError, NotFoundError } from "src/utils/error";
-import { Event, EventDetails, EventFilters, PaginatedEvents } from "src/types/event.types";
+import { EventDetailsDTO, EventDTO, EventFilters, PaginatedEvents } from "src/types/event.types";
 import { UpdateEventInput } from "src/schema/event.schema";
 import { findUserByEmail } from "src/repository/auth.repository";
 import { User } from "src/types/user.types";
+import { toEventDetailsDTO, toEventDTO } from "src/utils/eventDTO";
 
 export const createNewEvent = async (
   userId: number,
@@ -97,14 +98,14 @@ export const createEvent = async (
  * @param eventId           number - id of the event to fetch details
  * @returns                 Promise<Event>
  */
-export const getEventById = async (eventId: number): Promise<Event> => {
+export const getEventById = async (eventId: number): Promise<EventDTO> => {
   const event = await findEventById(eventId);
 
   if (!event) {
     throw new NotFoundError("Requested event not found!");
   }
 
-  return event;
+  return toEventDTO(event);
 };
 
 /**
@@ -143,10 +144,16 @@ export const getPastEvents = async (
 export const getEventWithDetailsById = async (
   eventId: number,
   userId: number | null,
-): Promise<EventDetails> => {
+): Promise<EventDetailsDTO> => {
   const event = await findEventDetailsById(eventId, userId);
 
-  return event;
+  if (!event) {
+    throw new NotFoundError(
+      `You don't have the permission to view the event or the event of id ${eventId} does not exists!`,
+    );
+  }
+
+  return toEventDetailsDTO(event);
 };
 
 /**
@@ -157,7 +164,7 @@ export const deleteEvent = async (eventId: number, userId: number) => {
   try {
     const event = await getEventById(eventId);
 
-    if (event.created_by !== userId) {
+    if (event.createdBy !== userId) {
       throw new ForbiddenError("User is not allowed to delete other's event!");
     }
 
@@ -186,7 +193,7 @@ export const updateEventByItsId = async (eventId: number, userId: number, data: 
     );
   }
 
-  if (event.created_by !== userId) {
+  if (event.createdBy !== userId) {
     throw new ForbiddenError("User is not allowed to update other's event!");
   }
 

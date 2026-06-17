@@ -17,20 +17,17 @@ export const EditEventPage = () => {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        console.log("ID", id);
-        console.log("ID", id);
-        console.log("ID", id);
         const res = await api.get(`/events/${id}`);
         const event = res.data;
 
         setInitialValues({
-          name: event.event_name,
+          name: event.eventName,
           description: event.description,
           location: event.location,
-          isPrivate: event.is_private,
-          categoryId: event.category_id ?? 0,
+          isPrivate: event.isPrivate,
+          categoryId: event.categoryId ?? 0,
           tagIds: event.tags.map((t: { id: number }) => t.id), //extracting ids from tag objects
-          eventDate: new Date(event.event_date).toISOString().slice(0, 16), //formating for datetime local input
+          eventDate: new Date(event.eventDate).toISOString().slice(0, 16), //formating for datetime local input
         });
       } catch (err) {
         console.error("EditEventPage fetch error:", err);

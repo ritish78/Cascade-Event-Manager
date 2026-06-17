@@ -11,7 +11,8 @@ import hashPassword, { passwordMatches } from "src/utils/hashPassword";
 import { generateAccessToken, generateJWT, verifyRefreshToken } from "src/utils/jwt";
 import argon2 from "argon2";
 import { RefreshToken } from "src/types/refreshToken.types";
-import { PublicUser } from "src/types/user.types";
+import { PublicUser, UserDTO } from "src/types/user.types";
+import { toUserDTO } from "src/utils/userDTO";
 
 /**
  * @param email         string - email provided by the user
@@ -21,7 +22,7 @@ import { PublicUser } from "src/types/user.types";
 export const loginUser = async (
   email: string,
   password: string,
-): Promise<{ accessToken: string; refreshToken: string; user: PublicUser }> => {
+): Promise<{ accessToken: string; refreshToken: string; user: UserDTO }> => {
   const user = await findUserByEmail(email);
 
   if (!user) {
@@ -60,13 +61,7 @@ export const loginUser = async (
 
   return {
     ...tokens,
-    user: {
-      id: user.id,
-      full_name: user.full_name,
-      email: user.email,
-      is_verified: user.is_verified,
-      is_active: user.is_active,
-    },
+    user: toUserDTO(user),
   };
 };
 
@@ -76,7 +71,7 @@ export const loginUser = async (
  */
 export const refreshAccessToken = async (
   refreshToken: string,
-): Promise<{ accessToken: string; user: PublicUser }> => {
+): Promise<{ accessToken: string; user: UserDTO }> => {
   let payload: { user: { id: number; fullName: string } };
 
   try {
@@ -120,13 +115,7 @@ export const refreshAccessToken = async (
 
   return {
     accessToken: generateAccessToken(payload.user.id, userExistsInOurDatabase.full_name),
-    user: {
-      id: userExistsInOurDatabase.id,
-      full_name: userExistsInOurDatabase.full_name,
-      email: userExistsInOurDatabase.email,
-      is_verified: userExistsInOurDatabase.is_verified,
-      is_active: userExistsInOurDatabase.is_active,
-    },
+    user: toUserDTO(userExistsInOurDatabase),
   };
 };
 
