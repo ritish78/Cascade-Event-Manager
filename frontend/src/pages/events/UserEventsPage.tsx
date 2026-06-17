@@ -58,37 +58,18 @@ export const UserEventsPage = ({ endpoint, title, showStatusFilter = false }: Us
     fetchEvents();
   }, [page, limit, timeframe, status, endpoint]);
 
-  const setPage = (newPage: number) => {
+  //we were using 4 different function to update page, limit, timeframe and status.
+  //this function can take the key as page, limit, timeframe or status.
+  //we also need to update the EventsPage, but currently there is only two filters
+  const updateFilterParam = (key: string, value: string) => {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
-      next.set("page", String(newPage));
-
-      return next;
-    });
-  };
-
-  const setLimit = (newLimit: number) => {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      next.set("limit", String(newLimit));
-
-      return next;
-    });
-  };
-
-  const setTimeFrame = (newTimeFrame: string) => {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      next.set("timeframe", newTimeFrame);
-
-      return next;
-    });
-  };
-  const setStatus = (newStatus: string) => {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      next.set("status", newStatus);
-
+      next.set(key, value);
+      //making it even better. when the user changes the timeframe or status,
+      //we are resetting the page to be on page 1 instead of being at the current page
+      //and requesting /page=3&status=invited on the backend while there's not even
+      //a 2nd page for status=invited.
+      if (key !== "page") next.set("page", "1");
       return next;
     });
   };
@@ -103,12 +84,12 @@ export const UserEventsPage = ({ endpoint, title, showStatusFilter = false }: Us
           <h1 className="text-2xl font-bold text-slate-100">{title}</h1>
         </div>
 
-        <div className="flex flex-wrap gap-4 mb-8">
+        <div className="flex flex-wrap gap-12 mb-8">
           <div className="flex gap-2">
             {TIMEFRAME_OPTIONS.map((option) => (
               <button
                 key={option.value}
-                onClick={() => setTimeFrame(option.value)}
+                onClick={() => updateFilterParam("timeframe", option.value)}
                 className={`px-4 py-1.5 rounded-xl text-sm border transition cursor-pointer ${
                   timeframe === option.value
                     ? "border-emerald-600 bg-emerald-600 text-white"
@@ -125,7 +106,7 @@ export const UserEventsPage = ({ endpoint, title, showStatusFilter = false }: Us
               {STATUS_OPTIONS.map((option) => (
                 <button
                   key={option.value}
-                  onClick={() => setStatus(option.value)}
+                  onClick={() => updateFilterParam("status", option.value)}
                   className={`px-4 py-1.5 rounded-xl text-sm border transition cursor-pointer ${
                     status === option.value
                       ? "border-emerald-600 bg-emerald-600 text-white"
@@ -173,7 +154,7 @@ export const UserEventsPage = ({ endpoint, title, showStatusFilter = false }: Us
         {!isLoading && totalPages > 1 && (
           <div className="flex items-center justify-center gap-3 mt-12">
             <button
-              onClick={() => setPage(Math.max(1, page - 1))}
+              onClick={() => updateFilterParam("page", String(Math.max(1, page - 1)))}
               disabled={page === 1}
               className="px-4 py-2 rounded-xl border border-slate-700 text-sm text-slate-300 hover:border-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition"
             >
@@ -185,7 +166,7 @@ export const UserEventsPage = ({ endpoint, title, showStatusFilter = false }: Us
             </span>
 
             <button
-              onClick={() => setPage(Math.min(totalPages, page + 1))}
+              onClick={() => updateFilterParam("page", String(Math.min(totalPages, page + 1)))}
               disabled={page === totalPages}
               className="px-4 py-2 rounded-xl border border-slate-700 text-sm text-slate-300 hover:border-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition"
             >
@@ -194,7 +175,7 @@ export const UserEventsPage = ({ endpoint, title, showStatusFilter = false }: Us
 
             <select
               value={limit}
-              onChange={(e) => setLimit(Number(e.target.value))}
+              onChange={(e) => updateFilterParam("limit", e.target.value)}
               className=" px-4 py-2 rounded-xl border border-slate-700 text-sm  text-slate-300 hover:border-emerald-600 cursor-pointer transition"
             >
               <option value={9}>9 per page</option>
