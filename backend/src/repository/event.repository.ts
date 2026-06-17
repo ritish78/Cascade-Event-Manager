@@ -565,16 +565,15 @@ export const updateUserEventStatus = async (
  * @param userId            number - id of the user
  * @param limit             number - number of events to fetch
  * @param page              number - page that the user is currently in
- * @param timeframe         upcoming | past | all
+ * @param filters           EventFilters
  * @param status            accepted | invited | declined
  */
 export const findUserMemberEvents = async (
   userId: number,
   page: number,
   limit: number,
-  timeframe: "upcoming" | "past" | "all",
+  filters: EventFilters,
   status?: "accepted" | "invited" | "declined",
-  sort?: "asc" | "desc",
 ): Promise<PaginatedEvents> => {
   const offset = (page - 1) * limit;
 
@@ -607,12 +606,48 @@ export const findUserMemberEvents = async (
   if (status !== undefined) {
     baseQuery.where("em.status", status);
   }
+  const { tagIds, isPrivate, createdBy, categoryId, from, to, sort } = filters;
 
-  //same as in buildEventsFutureOrPastQuery
+  const timeframe = filters.timeframe ?? "upcoming";
+
   if (timeframe === "upcoming") {
     baseQuery.where("e.event_date", ">=", db.raw("CURRENT_DATE"));
   } else if (timeframe === "past") {
     baseQuery.where("e.event_date", "<", db.raw("CURRENT_DATE"));
+  }
+  //no need for querying for timeframe === "all" as we don't put a where clause in the query
+
+  if (isPrivate !== undefined) {
+    baseQuery.where("e.is_private", isPrivate);
+  }
+
+  if (tagIds && tagIds.length > 0) {
+    baseQuery.whereExists(
+      db("event_tags AS et")
+        .where("et.event_id", db.ref("e.id"))
+        .whereIn("et.tag_id", tagIds)
+        .select(db.raw("1")),
+    );
+  }
+
+  if (createdBy !== undefined) {
+    baseQuery.where("e.created_by", createdBy);
+  }
+
+  if (categoryId !== undefined) {
+    if (categoryId === null) {
+      baseQuery.whereNull("e.category_id");
+    } else {
+      baseQuery.where("e.category_id", categoryId);
+    }
+  }
+
+  if (from !== undefined) {
+    baseQuery.where("e.event_date", ">=", from);
+  }
+
+  if (to !== undefined) {
+    baseQuery.where("e.event_date", "<=", to);
   }
 
   baseQuery

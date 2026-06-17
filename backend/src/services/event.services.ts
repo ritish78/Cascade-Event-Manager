@@ -321,10 +321,10 @@ export const getUserMemberEvents = async (
   userId: number,
   page: number,
   limit: number,
-  timeframe: "upcoming" | "past" | "all",
+  filters: EventFilters,
   status?: "accepted" | "invited" | "declined",
 ) => {
-  return findUserMemberEvents(userId, page, limit, timeframe, status);
+  return findUserMemberEvents(userId, page, limit, filters, status);
 };
 
 /**

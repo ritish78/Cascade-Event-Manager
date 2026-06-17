@@ -307,10 +307,19 @@ export const getUserJoinedEventsController = async (req: Request, res: Response)
     throw new NotFoundError("You need to login first!");
   }
 
-  const timeframe = parseTimeFrame(req.query.timeframe) ?? "upcoming";
+  const parsedFilters = eventFilterSchema.parse(req.query);
+  const filters: EventFilters = {
+    isPrivate: parsedFilters.isPrivate,
+    tagIds: parsedFilters.tagIds,
+    createdBy: parsedFilters.createdBy,
+    categoryId: parsedFilters.categoryId,
+    timeframe: parseTimeFrame(parsedFilters.timeframe),
+    from: parsedFilters.from,
+    to: parsedFilters.to,
+  };
   const status = parseMemberStatus(req.query.status);
 
-  const events = await getUserMemberEvents(req.user.id, page, limit, timeframe, status);
+  const events = await getUserMemberEvents(req.user.id, page, limit, filters, status);
 
   res.status(200).send(events);
 };
