@@ -51,6 +51,7 @@ const EventDetailPage = () => {
 
     try {
       await api.post(`/events/${id}/join`);
+      window.location.reload();
     } catch {
       setRsvpStatus("idle");
     }
@@ -73,6 +74,33 @@ const EventDetailPage = () => {
       </div>
     );
   }
+
+  const userMembership = user ? event.members.find((m) => m.user_id === user.id) : null;
+
+  const handleRespond = async (response: "accepted" | "declined") => {
+    try {
+      await api.patch(`/events/${event.event_id}/respond`, { response });
+      window.location.reload();
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message ?? "Failed to respond.");
+      }
+    }
+  };
+
+  const handleDelete = async () => {
+    //shortcut way without creating another modal. will visit this later if i have time to create
+    //the modal for confirmation to delete. currently, this seems to suffice
+    if (!confirm("Are you sure that you want to delete this event?")) return;
+    try {
+      await api.delete(`/events/${id}`);
+      navigate("/");
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message ?? "Failed to delete.");
+      }
+    }
+  };
 
   const isOwner = user?.id === event.creator_id;
   const isJoined = event?.members?.some((m) => m.user_id === user?.id && m.status === "accepted");
@@ -147,12 +175,20 @@ const EventDetailPage = () => {
 
               {isOwner ? (
                 <>
-                  <button
-                    onClick={() => navigate(`/events/${event.event_id}/edit`)}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-slate-50 rounded-xl py-3 font-medium transition cursor-pointer"
-                  >
-                    Edit Event
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => navigate(`/events/${event.event_id}/edit`)}
+                      className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-slate-50 rounded-xl py-3 font-medium transition cursor-pointer"
+                    >
+                      Edit Event
+                    </button>
+                    <button
+                      onClick={() => handleDelete()}
+                      className="flex-1 border border-red-500 hover:bg-red-500/10 text-red-400 rounded-xl py-3 font-medium transition cursor-pointer"
+                    >
+                      Delete Event
+                    </button>
+                  </div>
                   <button
                     onClick={() => setShowInviteModal(true)}
                     className="mt-2 w-full bg-emerald-600 hover:bg-emerald-700 text-slate-50 rounded-xl py-3 font-medium transition cursor-pointer"
@@ -160,17 +196,55 @@ const EventDetailPage = () => {
                     Invite Members
                   </button>
                 </>
+              ) : userMembership?.status === "invited" ? (
+                //when the current user is invited, we show accept and decline button instead of Join Event button
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleRespond("accepted")}
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-slate-50 rounded-xl py-3 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    Accept
+                  </button>
+                  <button
+                    onClick={() => handleRespond("declined")}
+                    className="flex-1 border border-red-500 hover:bg-red-500/10 text-red-400 rounded-xl py-3 font-medium transition cursor-pointer"
+                  >
+                    Decline
+                  </button>
+                </div>
+              ) : userMembership?.status === "accepted" ? (
+                //when the user has already accepted, we are disabling the button
+                <button
+                  disabled
+                  className="w-full border border-emerald-600 text-emerald-400 rounded-xl py-3 font-medium opacity-60 cursor-not-allowed"
+                >
+                  Joined
+                </button>
+              ) : userMembership?.status === "declined" ? (
+                //this is when the user has declined, and wants to change their response to accept
+                <button
+                  onClick={handleRSVP}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-slate-50 rounded-xl py-3 font-medium transition cursor-pointer"
+                >
+                  Join Event
+                </button>
               ) : (
                 <button
                   onClick={handleRSVP}
-                  disabled={rsvpStatus === "loading" || rsvpStatus === "joined" || isJoined}
+                  disabled={rsvpStatus === "loading" || isJoined}
                   className="w-full bg-emerald-600 hover:bg-emerald-700 text-slate-50 rounded-xl py-3 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
-                  {user?.id ? (isJoined ? "Joined" : "Join Event") : "Login to join"}
+                  {user?.id ? "Join Event" : "Login to join"}
                 </button>
               )}
               {showInviteModal && (
-                <InviteModal eventId={event.event_id} onClose={() => setShowInviteModal(false)} />
+                <InviteModal
+                  eventId={event.event_id}
+                  onClose={() => {
+                    setShowInviteModal(false);
+                    window.location.reload();
+                  }}
+                />
               )}
 
               <div className="mt-6 pt-6 border-t border-slate-800">

@@ -18,6 +18,10 @@ export const InviteModal = ({ eventId, onClose }: InviteModalProps) => {
 
     try {
       const res = await api.post(`/events/${eventId}/invite`, { email });
+
+      //wanted to set a page reload once the user is invited succesfully instead of showing
+      //success message so that the participation div would show the new invited user instantly
+      //   window.location.reload();
       setSuccess(res.data.message);
       setEmail("");
     } catch (err) {
@@ -43,7 +47,7 @@ export const InviteModal = ({ eventId, onClose }: InviteModalProps) => {
             onClick={onClose}
             className="text-slate-400 hover:text-slate-100 transition text-xl cursor-pointer"
           >
-            X
+            x
           </button>
         </div>
 

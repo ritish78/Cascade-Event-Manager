@@ -9,10 +9,10 @@ export const loginSchema = z
 
 export const registerSchema = z
   .object({
-    fullName: z.string().min(1, { error: "Full Name is required!" }),
+    full_name: z.string().min(1, { error: "Full Name is required!" }),
     email: z.email("Valid email is required!"),
     password: z.string().min(8, { error: "Please enter password of length 8 or more!" }),
-    confirmPassword: z.string().min(8, { error: "Please enter password of length 8 or more!" }),
+    confirm_password: z.string().min(8, { error: "Please enter password of length 8 or more!" }),
   })
   .strict();
 
