@@ -1,0 +1,209 @@
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import axios from "axios";
+import api from "../../api/axios";
+import type { MemberStatus, PaginatedEvents, Timeframe, UserEventsPageProps } from "../../types/event.types";
+import EventCard from "../../components/ui/EventCard";
+import {
+  DEFAULT_PAGE_NUMBER,
+  NUMBER_OF_EVENTS_PER_PAGE,
+  STATUS_OPTIONS,
+  TIMEFRAME_OPTIONS,
+} from "../../config";
+
+export const UserEventsPage = ({ endpoint, title, showStatusFilter = false }: UserEventsPageProps) => {
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [data, setData] = useState<PaginatedEvents | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  //Read from URL params
+  const page = Math.max(1, Number(searchParams.get("page")) || DEFAULT_PAGE_NUMBER);
+  const limit = Math.max(1, Number(searchParams.get("limit")) || NUMBER_OF_EVENTS_PER_PAGE);
+  //setting default as upcoming for timeframe and status to be all
+  const timeframe = (searchParams.get("timeframe") as Timeframe) || "upcoming";
+  const status = (searchParams.get("status") as MemberStatus | "all") || "all";
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const params: Record<string, string | number> = {
+          page,
+          limit,
+          timeframe,
+        };
+
+        //we only need to send status param for /events/joined and when not all
+        if (showStatusFilter && status !== "all") {
+          params.status = status;
+        }
+
+        const res = await api.get(endpoint, { params });
+        setData(res.data);
+      } catch (err) {
+        if (axios.isAxiosError(err)) {
+          setError(err.response?.data?.message ?? "Failed to load events.");
+        } else {
+          setError("Could not communicate with the backend. Please try again.");
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, [page, limit, timeframe, status, endpoint]);
+
+  const setPage = (newPage: number) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("page", String(newPage));
+
+      return next;
+    });
+  };
+
+  const setLimit = (newLimit: number) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("limit", String(newLimit));
+
+      return next;
+    });
+  };
+
+  const setTimeFrame = (newTimeFrame: string) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("timeframe", newTimeFrame);
+
+      return next;
+    });
+  };
+  const setStatus = (newStatus: string) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("status", newStatus);
+
+      return next;
+    });
+  };
+
+  const events = data?.events ?? [];
+  const totalPages = data?.totalPages ?? 1;
+
+  return (
+    <div className="min-h-screen">
+      <div className="max-w-6xl mx-auto px-6 py-12">
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-2xl font-bold text-slate-100">{title}</h1>
+        </div>
+
+        <div className="flex flex-wrap gap-4 mb-8">
+          <div className="flex gap-2">
+            {TIMEFRAME_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => setTimeFrame(option.value)}
+                className={`px-4 py-1.5 rounded-xl text-sm border transition cursor-pointer ${
+                  timeframe === option.value
+                    ? "border-emerald-600 bg-emerald-600 text-white"
+                    : "border-slate-700 text-slate-300 hover:border-slate-500"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+
+          {showStatusFilter && (
+            <div className="flex gap-2">
+              {STATUS_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => setStatus(option.value)}
+                  className={`px-4 py-1.5 rounded-xl text-sm border transition cursor-pointer ${
+                    status === option.value
+                      ? "border-emerald-600 bg-emerald-600 text-white"
+                      : "border-slate-700 text-slate-300 hover:border-slate-500"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {isLoading && (
+          <div className="flex items-center justify-center py-20">
+            <p className="text-slate-400">Loading events!</p>
+          </div>
+        )}
+
+        {!isLoading && !error && events.length === 0 && (
+          <div className="text-center py-20">
+            <p className="text-slate-500 text-lg">No events found</p>
+            {endpoint === "/events/mine" && (
+              <button
+                onClick={() => navigate("/events/create")}
+                className="mt-4 text-emerald-400 hover:underline cursor-pointer"
+              >
+                Create your first event
+              </button>
+            )}
+          </div>
+        )}
+
+        {!isLoading && !error && events.length > 0 && (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {events.map((event) => (
+              <EventCard
+                key={event.event_id}
+                event={event}
+                onClick={() => navigate(`/events/${event.event_id}`)}
+              />
+            ))}
+          </div>
+        )}
+        {!isLoading && totalPages > 1 && (
+          <div className="flex items-center justify-center gap-3 mt-12">
+            <button
+              onClick={() => setPage(Math.max(1, page - 1))}
+              disabled={page === 1}
+              className="px-4 py-2 rounded-xl border border-slate-700 text-sm text-slate-300 hover:border-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition"
+            >
+              Previous
+            </button>
+
+            <span className="text-sm text-slate-400">
+              Page {page} of {totalPages}
+            </span>
+
+            <button
+              onClick={() => setPage(Math.min(totalPages, page + 1))}
+              disabled={page === totalPages}
+              className="px-4 py-2 rounded-xl border border-slate-700 text-sm text-slate-300 hover:border-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition"
+            >
+              Next
+            </button>
+
+            <select
+              value={limit}
+              onChange={(e) => setLimit(Number(e.target.value))}
+              className=" px-4 py-2 rounded-xl border border-slate-700 text-sm  text-slate-300 hover:border-emerald-600 cursor-pointer transition"
+            >
+              <option value={9}>9 per page</option>
+              <option value={18}>18 per page</option>
+              <option value={27}>27 per page</option>
+            </select>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};

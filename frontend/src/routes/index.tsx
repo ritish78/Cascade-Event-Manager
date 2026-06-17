@@ -8,6 +8,8 @@ import EventsPage from "../pages/events/EventsPage";
 import ProtectedRoute from "./ProtectedRoute";
 import { CreateEventPage } from "../pages/events/CreateEventPage";
 import { EditEventPage } from "../pages/events/EditEventPage";
+import MyEventsPage from "../pages/events/MyEventsPage";
+import JoinedEventsPage from "../pages/events/JoinedEventsPage";
 
 export const router = createBrowserRouter([
   {
@@ -26,6 +28,8 @@ export const router = createBrowserRouter([
         element: <ProtectedRoute />,
         children: [
           { path: "/events/create", element: <CreateEventPage /> },
+          { path: "/events/mine", element: <MyEventsPage /> },
+          { path: "/events/joined", element: <JoinedEventsPage /> },
           { path: "/events/:id/edit", element: <EditEventPage /> },
         ],
       },

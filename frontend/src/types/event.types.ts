@@ -3,7 +3,7 @@ import type { Tag } from "./tag.types";
 export interface Member {
   user_id: number;
   full_name: string;
-  status: "invited" | "accepted" | "declined";
+  status: MemberStatus;
   role: "organizer" | "attendee";
 }
 
@@ -56,4 +56,13 @@ export interface EventFormProps {
 export interface InviteModalProps {
   eventId: number;
   onClose: () => void;
+}
+
+export type Timeframe = "upcoming" | "past" | "all";
+export type MemberStatus = "invited" | "accepted" | "declined";
+
+export interface UserEventsPageProps {
+  endpoint: "/events/mine" | "/events/joined";
+  title: string;
+  showStatusFilter?: boolean; //we need status filter only for /events/joined
 }
