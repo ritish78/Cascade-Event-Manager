@@ -113,9 +113,7 @@ const EventDetailPage = () => {
             <div>
               <h1 className="text-4xl font-bold tracking-tight">{event.eventName}</h1>
 
-              {event.category_name && (
-                <p className="text-emerald-400 mt-2">Category: {event.category_name}</p>
-              )}
+              {event.categoryName && <p className="text-emerald-400 mt-2">Category: {event.categoryName}</p>}
             </div>
 
             <span className="text-xs uppercase tracking-wide border border-emerald-700 px-3 py-1 rounded-full text-slate-50">

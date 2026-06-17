@@ -18,7 +18,7 @@ export interface EventDetails {
   creatorId: number;
   creatorName: string;
   categoryId: number | null; //shouldn't be null since we are getting category_id from category table after joining with events table
-  category_name: string | null;
+  categoryName: string | null;
   tags: Tag[];
   members: Member[];
 }
@@ -77,4 +77,22 @@ export interface UserEventsPageProps {
   endpoint: "/events/mine" | "/events/joined";
   title: string;
   showStatusFilter?: boolean; //we need status filter only for /events/joined
+}
+
+export interface EventFilterGroupProps {
+  timeframe: string;
+  categoryId: string;
+  from: string;
+  to: string;
+  tagIds: number[];
+  updateFilterParam: (key: string, value: string) => void;
+  toggleTag: (id: number) => void;
+  showTimeframe?: boolean;
+}
+
+export interface EventsPaginationProps {
+  page: number;
+  totalPages: number;
+  limit: number;
+  updateFilterParam: (key: string, value: string) => void;
 }
