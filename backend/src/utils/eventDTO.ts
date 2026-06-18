@@ -7,7 +7,7 @@ import {
   EventRowDTO,
   Member,
   MemberDTO,
-} from "src/types/event.types";
+} from "../types/event.types";
 
 export const toEventDTO = (event: Event): EventDTO => ({
   id: event.id,

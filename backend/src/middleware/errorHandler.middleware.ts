@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { GenericError } from "src/utils/error";
+import { GenericError } from "../utils/error";
 import z, { ZodError } from "zod";
 
 /**

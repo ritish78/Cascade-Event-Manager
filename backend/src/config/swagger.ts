@@ -10,12 +10,20 @@ const options: swaggerJSDoc.Options = {
     },
     tags: [
       {
-        name: "auth",
+        name: "Auth",
         description: "Register, Login, Logout or Refresh Access Token",
       },
       {
-        name: "events",
+        name: "Events",
         description: "Create, View, Update or Delete Events. You can also invite other members.",
+      },
+      {
+        name: "Categories",
+        description: "Get categories for the event.",
+      },
+      {
+        name: "Tags",
+        description: "Get tags for the event.",
       },
     ],
     servers: [
@@ -42,7 +50,6 @@ const options: swaggerJSDoc.Options = {
         },
         ZodError: {
           type: "object",
-          required: ["error", "message", "fields"],
           properties: {
             error: {
               type: "string",
@@ -56,24 +63,25 @@ const options: swaggerJSDoc.Options = {
               type: "array",
               items: {
                 type: "object",
-                required: ["field", "message"],
                 properties: {
                   field: {
                     type: "string",
-                    example: "location",
+                    description: "The name of the field that failed validation",
+                    example: "email",
                   },
                   message: {
                     type: "string",
+                    description: "Validation error message for this field",
                     example: "Invalid input: expected string, received undefined",
                   },
                   expected: {
                     type: "string",
-                    nullable: true,
+                    description: "The expected type or value",
                     example: "string",
                   },
                   received: {
                     type: "string",
-                    nullable: true,
+                    description: "The actual type or value received",
                     example: "undefined",
                   },
                 },
@@ -342,6 +350,89 @@ const options: swaggerJSDoc.Options = {
                 type: "integer",
               },
               example: [1, 3, 6],
+            },
+          },
+        },
+        UserInviteInput: {
+          type: "object",
+          required: ["email"],
+          properties: {
+            email: {
+              type: "string",
+              format: "email",
+              example: "rajeshhamal@email.com",
+            },
+          },
+        },
+        UserResponseToInvitation: {
+          type: "object",
+          required: ["response"],
+          properties: {
+            response: {
+              type: "string",
+              enum: ["accepted", "declined"],
+              example: "accepted",
+            },
+          },
+        },
+        LoginInput: {
+          type: "object",
+          required: ["email", "password"],
+          properties: {
+            email: {
+              type: "string",
+              format: "email",
+              example: "rajeshhamal@email.com",
+            },
+            password: {
+              type: "string",
+              minLength: 8,
+              example: "password123",
+            },
+          },
+        },
+
+        UserDTO: {
+          type: "object",
+          properties: {
+            id: {
+              type: "integer",
+              example: 1,
+            },
+            fullName: {
+              type: "string",
+              example: "Rajesh Hamal",
+            },
+            email: {
+              type: "string",
+              format: "email",
+              example: "rajeshhamal@email.com",
+            },
+            isVerified: {
+              type: "boolean",
+              example: true,
+            },
+            isActive: {
+              type: "boolean",
+              example: true,
+            },
+          },
+        },
+        CategoryDTO: {
+          type: "object",
+          properties: {
+            id: {
+              type: "integer",
+              example: 1,
+            },
+            name: {
+              type: "string",
+              example: "Technology",
+            },
+            description: {
+              type: "string",
+              nullable: true,
+              example: "Hackathons, tech showcase, and conference",
             },
           },
         },

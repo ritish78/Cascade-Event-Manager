@@ -1,5 +1,5 @@
 import type { Knex } from "knex";
-import { POSTGRES_DATA_URL } from "./src/config/index.js";
+import { POSTGRES_DATA_URL } from "./src/config";
 
 const knexConfig: { [key: string]: Knex.Config } = {
   development: {

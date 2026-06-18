@@ -29,6 +29,16 @@ export class ForbiddenError extends GenericError {
   }
 }
 
+//creating this error to throw when the user is providing resource that
+//already exists. For now, I am using it when the provided user's email
+//already exists in our database. Before, we were throwing Bad Request
+//error with a status code of 400. But using 409 is better.
+export class ConflictError extends GenericError {
+  constructor(message: string) {
+    super("ConflictError", 409, message);
+  }
+}
+
 export class NotFoundError extends GenericError {
   constructor(message: string) {
     super("ResourceNotFound", 404, message);

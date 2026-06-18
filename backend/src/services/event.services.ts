@@ -13,13 +13,13 @@ import {
   insertEventWithMembersAndTags,
   updateEventWithTags,
   updateUserEventStatus,
-} from "src/repository/event.repository";
-import { AuthError, BadRequestError, ForbiddenError, NotFoundError } from "src/utils/error";
-import { EventDetailsDTO, EventDTO, EventFilters, PaginatedEvents } from "src/types/event.types";
-import { UpdateEventInput } from "src/schema/event.schema";
-import { findUserByEmail } from "src/repository/auth.repository";
-import { User } from "src/types/user.types";
-import { toEventDetailsDTO, toEventDTO } from "src/utils/eventDTO";
+} from "../repository/event.repository";
+import { AuthError, BadRequestError, ForbiddenError, NotFoundError } from "../utils/error";
+import { EventDetailsDTO, EventDTO, EventFilters, PaginatedEvents } from "../types/event.types";
+import { UpdateEventInput } from "../schema/event.schema";
+import { findUserByEmail } from "../repository/auth.repository";
+import { User } from "../types/user.types";
+import { toEventDetailsDTO, toEventDTO } from "../utils/eventDTO";
 
 export const createNewEvent = async (
   userId: number,

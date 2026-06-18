@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { AuthError } from "src/utils/error";
-import { verifyAccessToken } from "src/utils/jwt";
+import { AuthError } from "../utils/error";
+import { verifyAccessToken } from "../utils/jwt";
 
 /**
  * @param req

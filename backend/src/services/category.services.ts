@@ -1,5 +1,5 @@
-import { getCategories } from "src/repository/category.repository";
-import { Category } from "src/types/category.types";
+import { getCategories } from "../repository/category.repository";
+import { Category } from "../types/category.types";
 
 /**
  * @returns             Promise<Category[]>

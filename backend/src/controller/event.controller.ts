@@ -9,7 +9,7 @@ import {
   userInviteSchema,
   UserResponseToInvitation,
   userResponseToInvitation,
-} from "src/schema/event.schema";
+} from "../schema/event.schema";
 import {
   createNewEvent,
   deleteEvent,
@@ -22,9 +22,9 @@ import {
   joinUserToEvent,
   respondToEventInvitation,
   updateEventByItsId,
-} from "src/services/event.services";
-import { EventFilters } from "src/types/event.types";
-import { AuthError, BadRequestError, NotFoundError } from "src/utils/error";
+} from "../services/event.services";
+import { EventFilters } from "../types/event.types";
+import { AuthError, BadRequestError, NotFoundError } from "../utils/error";
 import { parseMemberStatus, parseTimeFrame } from "../utils/parseTimeFrame"; //was working but somehow needed to change the import from
 
 /**
@@ -606,9 +606,79 @@ export const filterEventsController = async (req: Request, res: Response) => {
 };
 
 /**
- * @route           /api/v1/events/:id/join
- * @method          POST
- * @access          Authenticated
+ * @openapi
+ * /events/{id}/join:
+ *   post:
+ *     summary: Join an event
+ *     description: >
+ *       A user can join an event. If the event is private, they first need to be invited.
+ *     tags: [Events]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *         description: event id to join
+ *     responses:
+ *       200:
+ *         description: Successfully joined the event
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *             example:
+ *               message: "You joined the event!"
+ *       400:
+ *         description: Invalid event id or user is already part of the event
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               invalidId:
+ *                 summary: Invalid event ID
+ *                 value:
+ *                   error: "BadRequestError"
+ *                   message: "Invalid Event ID provided!"
+ *               alreadyJoined:
+ *                 summary: User already joined
+ *                 value:
+ *                   error: "BadRequestError"
+ *                   message: "You are already part of the event!"
+ *       401:
+ *         description: Not authenticated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "AuthError"
+ *               message: "Access token was not provided!"
+ *       403:
+ *         description: The event is private and the has not been invited.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "ForbiddenError"
+ *               message: "This is a private event. You must be invited first to join!"
+ *       404:
+ *         description: Event not found or user does not have permission to join
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "ResourceNotFound"
+ *               message: "You don't have permission to join the event or the event of id 1 does not exists!"
  */
 export const joinEventController = async (req: Request, res: Response): Promise<void> => {
   const eventId = Number(req.params.id);
@@ -629,9 +699,100 @@ export const joinEventController = async (req: Request, res: Response): Promise<
 };
 
 /**
- * @route            /api/v1/events/:id/invite
- * @method           POST
- * @access           Authenticated
+ * @openapi
+ * /events/{id}/invite:
+ *   post:
+ *     summary: Invite a user to an event
+ *     description: >
+ *       The event creator can invite members to the event.
+ *     tags: [Events]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *         description: event id to invite the user
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UserInviteInput'
+ *           example:
+ *             email: "keanureeves@email.com"
+ *     responses:
+ *       200:
+ *         description: User invited successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *             example:
+ *               message: "Invited Keanu Reeves successfully!"
+ *       400:
+ *         description: Invalid event ID or user is already invited or part of the event
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               invalidId:
+ *                 summary: Invalid event ID
+ *                 value:
+ *                   error: "BadRequestError"
+ *                   message: "Invalid Event ID provided!"
+ *               alreadyInvited:
+ *                 summary: User already invited
+ *                 value:
+ *                   error: "BadRequestError"
+ *                   message: "Keanu Reeves is already invited!"
+ *               alreadyMember:
+ *                 summary: User already a member
+ *                 value:
+ *                   error: "BadRequestError"
+ *                   message: "Keanu Reeves is already part of the event!"
+ *       401:
+ *         description: Not authenticated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "AuthError"
+ *               message: "Access token was not provided!"
+ *       403:
+ *         description: User is not the event creator
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "AuthError"
+ *               message: "Only the event creator has the permission to invite members!"
+ *       404:
+ *         description: Event not found or invited user does not exist
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               eventNotFound:
+ *                 summary: Event not found
+ *                 value:
+ *                   error: "ResourceNotFound"
+ *                   message: "You don't have permission to invite other users or the event of id 1 does not exists!"
+ *               userNotFound:
+ *                 summary: Invited user not found
+ *                 value:
+ *                   error: "ResourceNotFound"
+ *                   message: "The user of the provided email: keanureeves@email.com does not exists!"
  */
 export const inviteUserToEventController = async (req: Request, res: Response) => {
   const eventId = Number(req.params.id);
@@ -654,9 +815,122 @@ export const inviteUserToEventController = async (req: Request, res: Response) =
 };
 
 /**
- * @route           /api/v1/events/mine
- * @method          GET
- * @access          Authenticated
+ * @openapi
+ * /events/mine:
+ *   get:
+ *     summary: Get current user's created events
+ *     description: Returns a paginated list of all events created by the currently authenticated user. Supports the same filters as the main events endpoint.
+ *     tags: [Events]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of events per page
+ *       - in: query
+ *         name: timeframe
+ *         schema:
+ *           type: string
+ *           enum: [upcoming, past, all]
+ *           default: upcoming
+ *         description: Send upcoming if you want the events on future
+ *         example: upcoming
+ *       - in: query
+ *         name: isPrivate
+ *         schema:
+ *           type: boolean
+ *         description: Send true if you want to view your private events
+ *         example: true
+ *       - in: query
+ *         name: tagIds
+ *         schema:
+ *           type: string
+ *         description: The tag ids are comma separated. If any event has any of the tags, it will be sent back to the user.
+ *         example: "1,3,9"
+ *       - in: query
+ *         name: categoryId
+ *         schema:
+ *           type: integer
+ *         description: Filter by category id
+ *         example: 2
+ *       - in: query
+ *         name: from
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Events after the provided date
+ *         example: "2026-04-01"
+ *       - in: query
+ *         name: to
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Events before the provided date
+ *         example: "2026-06-29"
+ *     responses:
+ *       200:
+ *         description: List list of events created by the current user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PaginatedEvents'
+ *             example:
+ *               totalEvents: 2
+ *               page: 1
+ *               limit: 10
+ *               totalPages: 1
+ *               events:
+ *                 - eventId: 1
+ *                   eventName: "Science fair for school students!"
+ *                   description: "You will see more than bulb wired to a battery in this event!"
+ *                   location: "New Baneshwor, Kathmandu"
+ *                   isPrivate: false
+ *                   eventDate: "2026-06-20T03:48:05.996Z"
+ *                   createdAt: "2026-06-18T09:32:40.465Z"
+ *                   creatorId: 1
+ *                   creatorName: "Rajesh Hamal"
+ *                   categoryId: 3
+ *                   categoryName: "Science"
+ *                   tags: ["Fair", "Workshop"]
+ *                 - eventId: 5
+ *                   eventName: "Hackathon 2026"
+ *                   description: "Annual hackathon event"
+ *                   location: "Tundikhel, Kathmandu"
+ *                   isPrivate: true
+ *                   eventDate: "2026-07-01T09:00:00.000Z"
+ *                   createdAt: "2026-06-10T09:32:40.465Z"
+ *                   creatorId: 1
+ *                   creatorName: "Rajesh Hamal"
+ *                   categoryId: 1
+ *                   categoryName: "Technology"
+ *                   tags: ["Hackathon"]
+ *       400:
+ *         description: Invalid query parameters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "BadRequestError"
+ *               message: "Invalid request query provided!"
+ *       401:
+ *         description: Not authenticated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "AuthError"
+ *               message: "Access token was not provided!"
  */
 export const getAllEventsOfUserController = async (req: Request, res: Response) => {
   const page = Number(req.query.page) || 1;
@@ -672,20 +946,158 @@ export const getAllEventsOfUserController = async (req: Request, res: Response) 
     throw new NotFoundError(`You need to login first!`);
   }
 
-  const filter = {
-    createdBy: req.user.id,
-    timeframe: parseTimeFrame(req.query.timeframe),
+  const parsedFilters = eventFilterSchema.parse(req.query);
+  const filters: EventFilters = {
+    isPrivate: parsedFilters.isPrivate,
+    tagIds: parsedFilters.tagIds,
+    createdBy: parsedFilters.createdBy,
+    categoryId: parsedFilters.categoryId,
+    timeframe: parseTimeFrame(parsedFilters.timeframe),
+    from: parsedFilters.from,
+    to: parsedFilters.to,
   };
 
-  const events = await filterEventsByTagsAndEventType(req.user.id, limit, page, filter);
+  const events = await filterEventsByTagsAndEventType(req.user.id, limit, page, filters);
 
   res.status(200).send(events);
 };
 
 /**
- * @route               /api/v1/events/joined
- * @method              GET
- * @access              authenticated
+ * @openapi
+ * /events/joined:
+ *   get:
+ *     summary: Get list of the events the current user has joined
+ *     description: >
+ *       Lists all the events that the current user has joined. If the user has been invited to the event, it retuns the event as well.
+ *     tags: [Events]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of events per page
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [accepted, invited, declined]
+ *         description: Filter the events depending upon the user's response to the invitation
+ *         example: accepted
+ *       - in: query
+ *         name: timeframe
+ *         schema:
+ *           type: string
+ *           enum: [upcoming, past, all]
+ *           default: upcoming
+ *         description: Send upcoming if you want the events on future
+ *         example: upcoming
+ *       - in: query
+ *         name: isPrivate
+ *         schema:
+ *           type: boolean
+ *         description: Send true if you want to view your private events
+ *         example: true
+ *       - in: query
+ *         name: tagIds
+ *         schema:
+ *           type: string
+ *         description: The tag ids are comma separated. If any event has any of the tags, it will be sent back to the user.
+ *         example: "1,3,9"
+ *       - in: query
+ *         name: categoryId
+ *         schema:
+ *           type: integer
+ *         description: Filter by category id
+ *         example: 2
+ *       - in: query
+ *         name: from
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Events after the provided date
+ *         example: "2026-04-01"
+ *       - in: query
+ *         name: to
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Events after the provided date
+ *         example: "2026-06-29"
+ *     responses:
+ *       200:
+ *         description: Paginated list of events the current user has joined
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PaginatedEvents'
+ *             examples:
+ *               accepted:
+ *                 summary: Events user has accepted
+ *                 value:
+ *                   totalEvents: 2
+ *                   page: 1
+ *                   limit: 10
+ *                   totalPages: 1
+ *                   events:
+ *                     - eventId: 2
+ *                       eventName: "Another Event by the Government"
+ *                       description: "We are inviting many members to the event."
+ *                       location: "Babbarmahal, Kathmandu"
+ *                       isPrivate: false
+ *                       eventDate: "2026-06-19T03:48:05.996Z"
+ *                       createdAt: "2026-06-14T09:32:40.465Z"
+ *                       creatorId: 2
+ *                       creatorName: "Keanu Reeves"
+ *                       categoryId: 1
+ *                       categoryName: "Arts"
+ *                       tags: ["Show", "Networking"]
+ *               invited:
+ *                 summary: Events user has been invited to but not responded
+ *                 value:
+ *                   totalEvents: 1
+ *                   page: 1
+ *                   limit: 10
+ *                   totalPages: 1
+ *                   events:
+ *                     - eventId: 5
+ *                       eventName: "Private Workshop"
+ *                       description: "An exclusive private workshop"
+ *                       location: "Thamel, Kathmandu"
+ *                       isPrivate: true
+ *                       eventDate: "2026-07-01T09:00:00.000Z"
+ *                       createdAt: "2026-06-10T09:32:40.465Z"
+ *                       creatorId: 3
+ *                       creatorName: "Rajesh Hamal"
+ *                       categoryId: 2
+ *                       categoryName: "Workshop"
+ *                       tags: ["workshop"]
+ *       400:
+ *         description: Invalid query parameters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "BadRequestError"
+ *               message: "Invalid request query provided!"
+ *       401:
+ *         description: Not authenticated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "AuthError"
+ *               message: "Access token was not provided!"
  */
 export const getUserJoinedEventsController = async (req: Request, res: Response): Promise<void> => {
   const page = Number(req.query.page) || 1;
@@ -716,6 +1128,106 @@ export const getUserJoinedEventsController = async (req: Request, res: Response)
   res.status(200).send(events);
 };
 
+/**
+ * @openapi
+ * /events/{id}/respond:
+ *   patch:
+ *     summary: Respond to an event invitation
+ *     description: >
+ *       Respond to an invitation of an event. You can Accept/Decline the invitation.
+ *     tags: [Events]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *         description: Event id of the invitation to respond
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UserResponseToInvitation'
+ *           example:
+ *             response: "accepted"
+ *     responses:
+ *       200:
+ *         description: Response recorded successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *             examples:
+ *               accepted:
+ *                 summary: User accepted the invitation
+ *                 value:
+ *                   message: "You have accepted the invitation!"
+ *               declined:
+ *                 summary: User declined the invitation
+ *                 value:
+ *                   message: "You have declined the invitation!"
+ *       400:
+ *         description: Invalid event id or request body
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ZodError'
+ *             examples:
+ *               invalidId:
+ *                 summary: Invalid event id
+ *                 value:
+ *                   error: "BadRequestError"
+ *                   message: "Invalid Event ID provided!"
+ *               invalidResponse:
+ *                 summary: Invalid response value
+ *                 value:
+ *                   error: "ValidationError"
+ *                   message: "Invalid request body"
+ *                   fields:
+ *                     response: ["Invalid enum value. Expected 'accepted' | 'declined'"]
+ *       401:
+ *         description: Not authenticated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "AuthError"
+ *               message: "Access token was not provided!"
+ *       403:
+ *         description: User is the organizer of the event
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "ForbiddenError"
+ *               message: "You are the organizer of this event!"
+ *       404:
+ *         description: Event not found or user has not been invited
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               eventNotFound:
+ *                 summary: Event not found
+ *                 value:
+ *                   error: "ResourceNotFound"
+ *                   message: "You need to login first!"
+ *               notInvited:
+ *                 summary: User has not been invited
+ *                 value:
+ *                   error: "ResourceNotFound"
+ *                   message: "You have not been invited to this event!"
+ */
 export const respondToEventInvitationController = async (req: Request, res: Response): Promise<void> => {
   const eventId = Number(req.params.id);
 

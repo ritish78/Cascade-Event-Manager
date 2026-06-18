@@ -1,5 +1,5 @@
-import { getTags } from "src/repository/tag.repository";
-import { Tag } from "src/types/tag.types";
+import { getTags } from "../repository/tag.repository";
+import { Tag } from "../types/tag.types";
 
 /**
  * @returns             Promise<Tag[]>

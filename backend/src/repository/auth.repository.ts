@@ -1,7 +1,7 @@
-import db from "src/db";
-import { RefreshToken } from "src/types/refreshToken.types";
-import { User } from "src/types/user.types";
-import hashPassword from "src/utils/hashPassword";
+import db from "../db";
+import { RefreshToken } from "../types/refreshToken.types";
+import { User } from "../types/user.types";
+import hashPassword from "../utils/hashPassword";
 
 /**
  * @param email         string - email to use to search the user

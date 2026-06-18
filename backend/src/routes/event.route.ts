@@ -12,8 +12,8 @@ import {
   respondToEventInvitationController,
   upcomingEventsController,
   updateEventController,
-} from "src/controller/event.controller";
-import { authenticate, optionalAuthenticate } from "src/middleware/authenticate";
+} from "../controller/event.controller";
+import { authenticate, optionalAuthenticate } from "../middleware/authenticate";
 
 const router = Router();
 

@@ -5,14 +5,14 @@ import {
   getActiveRefreshTokens,
   insertRefreshToken,
   revokeTokenById,
-} from "src/repository/auth.repository";
-import { AuthError, BadRequestError, ForbiddenError, NotFoundError } from "src/utils/error";
-import hashPassword, { passwordMatches } from "src/utils/hashPassword";
-import { generateAccessToken, generateJWT, verifyRefreshToken } from "src/utils/jwt";
+} from "../repository/auth.repository";
+import { AuthError, BadRequestError, ConflictError, ForbiddenError, NotFoundError } from "../utils/error";
+import hashPassword, { passwordMatches } from "../utils/hashPassword";
+import { generateAccessToken, generateJWT, verifyRefreshToken } from "../utils/jwt";
 import argon2 from "argon2";
-import { RefreshToken } from "src/types/refreshToken.types";
-import { PublicUser, UserDTO } from "src/types/user.types";
-import { toUserDTO } from "src/utils/userDTO";
+import { RefreshToken } from "../types/refreshToken.types";
+import { PublicUser, UserDTO } from "../types/user.types";
+import { toUserDTO } from "../utils/userDTO";
 
 /**
  * @param email         string - email provided by the user
@@ -168,7 +168,8 @@ export const registerUser = async (
   const user = await findUserByEmail(email);
 
   if (user) {
-    throw new BadRequestError("User is already registered! Login in instead!");
+    //Updating the error thrown. The user now gets the status code of 409 Conflict.
+    throw new ConflictError("User is already registered! Login in instead!");
   }
 
   const hashedPassword = await hashPassword(password.trim());

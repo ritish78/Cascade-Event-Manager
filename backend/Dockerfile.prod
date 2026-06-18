@@ -33,4 +33,4 @@ RUN chown -R rajeshhamal:eventmanagementappgroup /home/eventmanagement/backend
 
 USER rajeshhamal
 
-CMD ["node", "dist/index.js"]
+CMD ["node", "dist/src/index.js"]
