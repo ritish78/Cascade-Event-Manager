@@ -4,6 +4,7 @@ import type { Category } from "../../types/categories.types";
 import type { Tag } from "../../types/tag.types";
 import api from "../../api/axios";
 import { TIMEFRAME_OPTIONS } from "../../config";
+import ToggleButton from "./Button/ToggleButton";
 
 const EventFilterGroup = ({
   timeframe,
@@ -40,17 +41,13 @@ const EventFilterGroup = ({
         {showTimeframe && (
           <div className="flex gap-2">
             {TIMEFRAME_OPTIONS.map((option) => (
-              <button
+              <ToggleButton
                 key={option.value}
                 onClick={() => updateFilterParam("timeframe", option.value)}
-                className={`px-4 py-1.5 rounded-xl text-sm border transition cursor-pointer ${
-                  timeframe === option.value
-                    ? "border-emerald-600 bg-emerald-600 text-white"
-                    : "border-slate-700 text-slate-300 hover:border-slate-500"
-                }`}
+                active={timeframe === option.value}
               >
                 {option.label}
-              </button>
+              </ToggleButton>
             ))}
           </div>
         )}
@@ -91,18 +88,14 @@ const EventFilterGroup = ({
       {tags.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {tags.map((tag) => (
-            <button
+            <ToggleButton
               key={tag.id}
-              type="button"
+              shape="pill"
+              active={tagIds.includes(tag.id)}
               onClick={() => toggleTag(tag.id)}
-              className={`px-3 py-1 rounded-full text-xs border transition cursor-pointer ${
-                tagIds.includes(tag.id)
-                  ? "border-emerald-600 bg-emerald-600 text-white"
-                  : "border-slate-700 text-slate-400 hover:border-slate-500"
-              }`}
             >
               {tag.name}
-            </button>
+            </ToggleButton>
           ))}
         </div>
       )}

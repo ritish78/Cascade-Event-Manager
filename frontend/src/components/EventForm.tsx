@@ -4,6 +4,8 @@ import type { Category } from "../types/categories.types";
 import type { Tag } from "../types/tag.types";
 import api from "../api/axios";
 import axios from "axios";
+import Button from "./ui/Button/Button";
+import ToggleButton from "./ui/Button/ToggleButton";
 
 export const EventForm = ({ initialValues, submitLabel, onSubmit }: EventFormProps) => {
   const [formData, setFormData] = useState<EventFormData>(initialValues);
@@ -176,14 +178,14 @@ export const EventForm = ({ initialValues, submitLabel, onSubmit }: EventFormPro
             <label className="font-medium">Tags</label>
             <div className="flex flex-wrap gap-2">
               {tags.map((tag) => (
-                <button
+                <ToggleButton
+                  shape="pill"
                   key={tag.id}
-                  type="button"
+                  active={formData.tagIds.includes(tag.id)}
                   onClick={() => toggleTag(tag.id)}
-                  className={`px-3 py-1 rounded-full text-sm border transition ${formData.tagIds.includes(tag.id) ? "border-emerald-600 bg-emerald-600 text-white" : "border-slate-700 text-slate-300"}`}
                 >
                   {tag.name}
-                </button>
+                </ToggleButton>
               ))}
             </div>
           </div>
@@ -201,13 +203,9 @@ export const EventForm = ({ initialValues, submitLabel, onSubmit }: EventFormPro
               className="w-full rounded-xl border border-slate-700 bg-transparent px-4 py-2"
             />
           </div>
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="bg-emerald-600 text-white rounded py-2 px-4 hover:bg-emerald-800 hover:cursor-pointer"
-          >
+          <Button variant="primary" disabled={isLoading}>
             {isLoading ? "Submitting!" : submitLabel}
-          </button>
+          </Button>
         </form>
       </div>
     </div>

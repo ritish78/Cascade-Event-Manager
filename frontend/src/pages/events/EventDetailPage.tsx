@@ -5,6 +5,7 @@ import { useAuth } from "../../hooks/useAuth";
 import api from "../../api/axios";
 import axios from "axios";
 import { InviteModal } from "../../components/ui/InviteModal";
+import Button from "../../components/ui/Button/Button";
 
 const EventDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -174,66 +175,45 @@ const EventDetailPage = () => {
               {isOwner ? (
                 <>
                   <div className="flex gap-2">
-                    <button
-                      onClick={() => navigate(`/events/${event.eventId}/edit`)}
-                      className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-slate-50 rounded-xl py-3 font-medium transition cursor-pointer"
+                    <Button
+                      variant="primary"
+                      className="flex-1"
+                      onClick={() => navigate(`/events${event.eventId}/edit`)}
                     >
                       Edit Event
-                    </button>
-                    <button
-                      onClick={() => handleDelete()}
-                      className="flex-1 border border-red-500 hover:bg-red-500/10 text-red-400 rounded-xl py-3 font-medium transition cursor-pointer"
-                    >
+                    </Button>
+                    <Button variant="danger" className="flex-1" onClick={() => handleDelete()}>
                       Delete Event
-                    </button>
+                    </Button>
                   </div>
-                  <button
-                    onClick={() => setShowInviteModal(true)}
-                    className="mt-2 w-full bg-emerald-600 hover:bg-emerald-700 text-slate-50 rounded-xl py-3 font-medium transition cursor-pointer"
-                  >
+                  <Button variant="primary" className="mt-2" onClick={() => setShowInviteModal(true)}>
                     Invite Members
-                  </button>
+                  </Button>
                 </>
               ) : userMembership?.status === "invited" ? (
                 //when the current user is invited, we show accept and decline button instead of Join Event button
                 <div className="flex gap-2">
-                  <button
-                    onClick={() => handleRespond("accepted")}
-                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-slate-50 rounded-xl py-3 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                  >
+                  <Button variant="primary" className="flex-1" onClick={() => handleRespond("accepted")}>
                     Accept
-                  </button>
-                  <button
-                    onClick={() => handleRespond("declined")}
-                    className="flex-1 border border-red-500 hover:bg-red-500/10 text-red-400 rounded-xl py-3 font-medium transition cursor-pointer"
-                  >
+                  </Button>
+                  <Button variant="danger" className="flex-1" onClick={() => handleRespond("declined")}>
                     Decline
-                  </button>
+                  </Button>
                 </div>
               ) : userMembership?.status === "accepted" ? (
                 //when the user has already accepted, we are disabling the button
-                <button
-                  disabled
-                  className="w-full border border-emerald-600 text-emerald-400 rounded-xl py-3 font-medium opacity-60 cursor-not-allowed"
-                >
+                <Button variant="disabled" disabled>
                   Joined
-                </button>
+                </Button>
               ) : userMembership?.status === "declined" ? (
                 //this is when the user has declined, and wants to change their response to accept
-                <button
-                  onClick={handleRSVP}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-slate-50 rounded-xl py-3 font-medium transition cursor-pointer"
-                >
+                <Button variant="primary" onClick={handleRSVP}>
                   Join Event
-                </button>
+                </Button>
               ) : (
-                <button
-                  onClick={handleRSVP}
-                  disabled={rsvpStatus === "loading" || isJoined}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-slate-50 rounded-xl py-3 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                >
+                <Button variant="primary" disabled={rsvpStatus === "loading" || isJoined}>
                   {user?.id ? "Join Event" : "Login to join"}
-                </button>
+                </Button>
               )}
               {showInviteModal && (
                 <InviteModal

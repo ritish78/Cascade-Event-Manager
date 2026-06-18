@@ -2,6 +2,8 @@ import { useState } from "react";
 import axios from "axios";
 import api from "../../api/axios";
 import type { InviteModalProps } from "../../types/event.types";
+import IconButton from "./Button/IconButton";
+import Button from "./Button/Button";
 
 export const InviteModal = ({ eventId, onClose }: InviteModalProps) => {
   const [email, setEmail] = useState("");
@@ -43,12 +45,7 @@ export const InviteModal = ({ eventId, onClose }: InviteModalProps) => {
       >
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-slate-100">Invite Member</h2>
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-slate-100 transition text-xl cursor-pointer"
-          >
-            x
-          </button>
+          <IconButton onClick={onClose}>x</IconButton>
         </div>
 
         <form onSubmit={handleInvite} className="flex flex-col gap-4">
@@ -74,13 +71,9 @@ export const InviteModal = ({ eventId, onClose }: InviteModalProps) => {
             </p>
           )}
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl py-2.5 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-          >
+          <Button variant="primary" disabled={isLoading}>
             {isLoading ? "Inviting!" : "Send Invite"}
-          </button>
+          </Button>
         </form>
       </div>
     </div>
