@@ -16,11 +16,22 @@ export const errorHandler = (error: unknown, req: Request, res: Response, next: 
 
   //if the error is from Zod
   if (error instanceof ZodError) {
-    //using z.treeifyError() to show what request body was invalid
+    const fields = error.issues.map((issue) => ({
+      field: issue.path.join("."),
+      message: issue.message,
+      expected: issue.code === "invalid_type" ? issue.expected : undefined,
+      received:
+        issue.code === "invalid_type"
+          ? issue.input === undefined
+            ? "undefined"
+            : typeof issue.input
+          : undefined,
+    }));
+
     return res.status(400).send({
       error: error.name,
       message: "Could not process the invalid body!",
-      feilds: z.treeifyError(error),
+      fields,
     });
   }
 

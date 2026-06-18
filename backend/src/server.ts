@@ -1,6 +1,9 @@
 import express, { Request, Response } from "express";
 import helmet from "helmet";
 import cookies from "cookie-parser";
+import swaggerUiExpress from "swagger-ui-express";
+import { swaggerSpec } from "./config/swagger";
+
 import { errorHandler } from "./middleware/errorHandler.middleware";
 
 //routes imports
@@ -25,6 +28,7 @@ app.use("/api/v1/auth", authRoute);
 app.use("/api/v1/events", eventRoute);
 app.use("/api/v1/tags", tagRoute);
 app.use("/api/v1/categories", categoriesRoute);
+app.use("/api/v1/api-docs", swaggerUiExpress.serve, swaggerUiExpress.setup(swaggerSpec));
 
 app.use(errorHandler);
 
