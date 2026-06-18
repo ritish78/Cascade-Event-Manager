@@ -6,14 +6,14 @@ import { JWT_ACCESS_SECRET, JWT_REFRESH_SECRET } from "../config";
  * @param fullName      string - full name of the user
  * @returns             string - signed jwt
  */
-export const generateAccessToken = (userId: number, fullName: string) => {
+export const generateAccessToken = (userId: number, fullName: string): string => {
   const payload = {
     user: {
       id: userId,
       fullName,
     },
   };
-  return jwt.sign(payload, JWT_ACCESS_SECRET, { expiresIn: "30m" });
+  return jwt.sign(payload, JWT_ACCESS_SECRET, { expiresIn: "10m" });
 };
 
 /**
@@ -21,7 +21,7 @@ export const generateAccessToken = (userId: number, fullName: string) => {
  * @param fullName      string - full name of the user
  * @returns             string - signed jwt
  */
-export const generateRefreshToken = (userId: number, fullName: string) => {
+export const generateRefreshToken = (userId: number, fullName: string): string => {
   const payload = {
     user: {
       id: userId,

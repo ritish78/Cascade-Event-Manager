@@ -12,7 +12,9 @@
     "migrate:rollback": "tsx node_modules/knex/bin/cli.js --knexfile knexfile.ts migrate:rollback",
     "migrate:make": "tsx node_modules/knex/bin/cli.js --knexfile knexfile.ts migrate:make",
     "seed:make": "tsx node_modules/knex/bin/cli.js --knexfile knexfile.ts seed:make",
-    "seed:run": "tsx node_modules/knex/bin/cli.js --knexfile knexfile.ts seed:run"
+    "seed:run": "tsx node_modules/knex/bin/cli.js --knexfile knexfile.ts seed:run",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "keywords": [
     "event",
@@ -27,9 +29,12 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.9.2",
     "@types/pg": "^8.20.0",
+    "@types/supertest": "^7.2.0",
+    "supertest": "^7.2.2",
     "tsc": "^2.0.4",
     "tsx": "^4.22.4",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
   },
   "dependencies": {
     "argon2": "^0.44.0",
