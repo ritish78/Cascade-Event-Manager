@@ -7,8 +7,8 @@ services:
       - NODE_ENV=production
     env_file:
       - ./backend/.env.prod
-    ports:
-      - 127.0.0.1:5000:5000
+    expose:
+      - 5000
     command: node dist/index.js
 
   eventmanagementfrontend:
@@ -29,4 +29,4 @@ services:
 
   eventmanagementadminer:
     ports:
-      - 127.0.0.1:8080:8080
+      - 127.0.0.1:8090:8080

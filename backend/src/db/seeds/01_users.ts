@@ -19,5 +19,33 @@ export async function seed(knex: Knex): Promise<void> {
       is_verified: true,
       is_active: true,
     },
+    {
+      full_name: "Keanu Reeves",
+      email: "keanureeves@email.com",
+      password: commonPassword,
+      is_verified: true,
+      is_active: true,
+    },
+    {
+      full_name: "Harrison Ford",
+      email: "harrisonford@email.com",
+      password: commonPassword,
+      is_verified: true,
+      is_active: true,
+    },
+    {
+      full_name: "Test User",
+      email: "testuser@email.com",
+      password: commonPassword,
+      is_verified: true,
+      is_active: true,
+    },
+    {
+      full_name: "John Doe",
+      email: "johndoe@email.com",
+      password: commonPassword,
+      is_verified: true,
+      is_active: true,
+    },
   ]);
 }
