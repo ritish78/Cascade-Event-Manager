@@ -25,7 +25,8 @@ import {
 } from "../services/event.services";
 import { EventFilters } from "../types/event.types";
 import { AuthError, BadRequestError, NotFoundError } from "../utils/error";
-import { parseMemberStatus, parseTimeFrame } from "../utils/parseTimeFrame"; //was working but somehow needed to change the import from
+import { parseMemberStatus, parseTimeFrame } from "../utils/parseTimeFrame";
+import logger from "../utils/logger";
 
 /**
  * @openapi
@@ -76,6 +77,12 @@ export const createEventController = async (req: Request, res: Response, next: N
       throw new AuthError("Missing tokens! Login in first!");
     }
 
+    logger.info(
+      `User of id ${req.user.id} is creating an event with name ${userInput.name}`,
+      userInput,
+      true,
+    );
+
     const event = await createNewEvent(
       req.user.id,
       userInput.name,
@@ -88,6 +95,8 @@ export const createEventController = async (req: Request, res: Response, next: N
       "accepted",
       userInput.tagIds,
     );
+
+    logger.info(`Event of id ${event.id} created successfully!`, event, true);
 
     res.status(201).send({ message: `New Event created!`, eventId: event.id });
   } catch (error) {
@@ -131,10 +140,13 @@ export const upcomingEventsController = async (req: Request, res: Response) => {
   const limit = Number(req.query.limit) || 10;
 
   if (isNaN(page) || isNaN(limit)) {
+    logger.error("Invalid query parameters for upcoming events", req.query, true);
     throw new BadRequestError("Invalid request query provided!");
   }
 
   const userId = req.user?.id ?? null;
+
+  logger.info(`Fetching upcoming events for user of id ${userId ?? "Guest"}`, { page, limit }, true);
 
   const events = await getUpcomingEvents(userId, limit, page);
 
@@ -177,10 +189,13 @@ export const pastEventsController = async (req: Request, res: Response) => {
   const limit = Number(req.query.limit) || 10;
 
   if (isNaN(page) || isNaN(limit)) {
+    logger.error("Invalid query parameters for past events", req.query, true);
     throw new BadRequestError("Invalid request query provided!");
   }
 
   const userId = req.user?.id ?? null;
+
+  logger.info(`Fetching past events for user of id ${userId ?? "Guest"}`, { page, limit }, true);
 
   const events = await getPastEvents(userId, limit, page);
 
@@ -236,9 +251,11 @@ export const eventByIdController = async (req: Request, res: Response) => {
   const eventId = Number(req.params.id);
 
   if (!eventId || isNaN(eventId)) {
+    logger.error("Invalid Event ID provided for fetching event details", { eventId: req.params.id }, true);
     throw new BadRequestError("Invalid Event ID provided!");
   }
 
+  logger.info(`Fetching details for event of id ${eventId} for user of id ${userId ?? "Guest"}`, null, true);
   const event = await getEventWithDetailsById(eventId, userId);
 
   res.status(200).send(event);
@@ -305,15 +322,18 @@ export const deleteEventController = async (req: Request, res: Response) => {
   const eventId = Number(req.params.id);
 
   if (!eventId || isNaN(eventId)) {
+    logger.error("Invalid Event id provided for deleting event", { eventId: req.params.id }, true);
     throw new BadRequestError("Invalid Event ID provided!");
   }
 
   if (!req.user || !req.user.id) {
+    logger.error("Unauthorized attempt to delete event", { eventId, user: req.user }, true);
     throw new NotFoundError(
       `You don't have permission to delete the event or the event of id ${eventId} does not exists!`,
     );
   }
 
+  logger.info(`Attempting to delete event of id ${eventId} for user of id ${req.user.id}`, null, true);
   await deleteEvent(eventId, req.user.id);
 
   res.status(200).send({ message: `Event of id ${eventId} deleted!` });
@@ -421,10 +441,12 @@ export const updateEventController = async (req: Request, res: Response) => {
   const eventId = Number(req.params.id);
 
   if (!eventId || isNaN(eventId)) {
+    logger.error("Invalid Event ID provided for updating event", { eventId: req.params.id }, true);
     throw new BadRequestError("Invalid Event ID provided!");
   }
 
   if (!req.user || !req.user.id) {
+    logger.error("Unauthorized attempt to update event", { eventId, user: req.user }, true);
     throw new NotFoundError(
       `You don't have permission to update the event or the event of id ${eventId} does not exists!`,
     );
@@ -432,6 +454,11 @@ export const updateEventController = async (req: Request, res: Response) => {
 
   const data: UpdateEventInput = updateEventSchema.parse(req.body);
 
+  logger.info(
+    `Attempting to update event of id ${eventId} for user of id ${req.user.id} with data ${JSON.stringify(data)}`,
+    null,
+    true,
+  );
   const updatedEvent = await updateEventByItsId(eventId, req.user.id, data);
 
   res.status(200).send({ message: `Event of ID ${eventId} updated successfully!`, event: updatedEvent });
@@ -569,6 +596,7 @@ export const filterEventsController = async (req: Request, res: Response) => {
   const limit = Number(req.query.limit) || 10;
 
   if (isNaN(page) || isNaN(limit)) {
+    logger.error("Invalid query parameters for filtering events", req.query, true);
     throw new BadRequestError("Invalid request query provided!");
   }
 
@@ -600,6 +628,11 @@ export const filterEventsController = async (req: Request, res: Response) => {
 
   const userId = req.user?.id ?? null;
 
+  logger.info(
+    `Filtering events for user of id ${userId ?? "Guest"} with filters ${JSON.stringify(filters)}`,
+    null,
+    true,
+  );
   const events = await filterEventsByTagsAndEventType(userId, limit, page, filters);
 
   res.status(200).send(events);
@@ -684,15 +717,18 @@ export const joinEventController = async (req: Request, res: Response): Promise<
   const eventId = Number(req.params.id);
 
   if (!eventId || isNaN(eventId)) {
+    logger.error("Invalid Event id provided for joining event", { eventId: req.params.id }, true);
     throw new BadRequestError("Invalid Event ID provided!");
   }
 
   if (!req.user || !req.user.id) {
+    logger.error("Unauthorized attempt to join event", { eventId, user: req.user }, true);
     throw new NotFoundError(
       `You don't have permission to join the event or the event of id ${eventId} does not exists!`,
     );
   }
 
+  logger.info(`User of id ${req.user.id} attempting to join event of id ${eventId}`, null, true);
   await joinUserToEvent(eventId, req.user.id);
 
   res.status(200).send({ message: "You joined the event!" });
@@ -798,10 +834,12 @@ export const inviteUserToEventController = async (req: Request, res: Response) =
   const eventId = Number(req.params.id);
 
   if (!eventId || isNaN(eventId)) {
+    logger.error("Invalid Event id provided for inviting user to event", { eventId: req.params.id }, true);
     throw new BadRequestError("Invalid Event ID provided!");
   }
 
   if (!req.user || !req.user.id) {
+    logger.error("Unauthorized attempt to invite user to event", { eventId, user: req.user }, true);
     throw new NotFoundError(
       `You don't have permission to invite other users or the event of id ${eventId} does not exists!`,
     );
@@ -809,6 +847,11 @@ export const inviteUserToEventController = async (req: Request, res: Response) =
 
   const userBody: UserInviteInput = userInviteSchema.parse(req.body);
 
+  logger.info(
+    `User of id ${req.user.id} attempting to invite user with email ${userBody.email} to event of id ${eventId}`,
+    null,
+    true,
+  );
   const invitedUser = await inviteUserToEvent(eventId, req.user.id, userBody.email);
 
   res.status(200).send({ message: `Invited ${invitedUser.full_name} successfully!` });
@@ -937,12 +980,14 @@ export const getAllEventsOfUserController = async (req: Request, res: Response) 
   const limit = Number(req.query.limit) || 10;
 
   if (isNaN(page) || isNaN(limit)) {
+    logger.error("Invalid query parameters for fetching user's events", req.query, true);
     throw new BadRequestError("Invalid request query provided!");
   }
 
   //we will use it after autheticated middleware, so req.user.id will not be empty
   //but still having checks like in the above functions
   if (!req.user || !req.user.id) {
+    logger.error("Unauthorized attempt to fetch user's events", { user: req.user }, true);
     throw new NotFoundError(`You need to login first!`);
   }
 
@@ -957,6 +1002,11 @@ export const getAllEventsOfUserController = async (req: Request, res: Response) 
     to: parsedFilters.to,
   };
 
+  logger.info(
+    `Fetching events created by user of id ${req.user.id} with filters ${JSON.stringify(filters)}`,
+    null,
+    true,
+  );
   const events = await filterEventsByTagsAndEventType(req.user.id, limit, page, filters);
 
   res.status(200).send(events);
@@ -1104,10 +1154,12 @@ export const getUserJoinedEventsController = async (req: Request, res: Response)
   const limit = Number(req.query.limit) || 10;
 
   if (isNaN(page) || isNaN(limit)) {
+    logger.error("Invalid query parameters for fetching user's joined events", req.query, true);
     throw new BadRequestError("Invalid request query provided!");
   }
 
   if (!req.user || !req.user.id) {
+    logger.error("Unauthorized attempt to fetch user's joined events", { user: req.user }, true);
     throw new NotFoundError("You need to login first!");
   }
 
@@ -1123,6 +1175,11 @@ export const getUserJoinedEventsController = async (req: Request, res: Response)
   };
   const status = parseMemberStatus(req.query.status);
 
+  logger.info(
+    `Fetching events joined by user of id ${req.user.id} with filters ${JSON.stringify(filters)} and status ${status}`,
+    null,
+    true,
+  );
   const events = await getUserMemberEvents(req.user.id, page, limit, filters, status);
 
   res.status(200).send(events);
@@ -1232,16 +1289,24 @@ export const respondToEventInvitationController = async (req: Request, res: Resp
   const eventId = Number(req.params.id);
 
   if (!eventId || isNaN(eventId)) {
+    logger.error("Invalid Event id provided for responding to invitation", { eventId: req.params.id }, true);
     throw new BadRequestError("Invalid Event ID provided!");
   }
 
   if (!req.user || !req.user.id) {
+    logger.error("Unauthorized attempt to respond to event invitation", { eventId, user: req.user }, true);
     throw new NotFoundError("You need to login first!");
   }
 
   const userResponse: UserResponseToInvitation = userResponseToInvitation.parse(req.body);
 
   await respondToEventInvitation(eventId, req.user.id, userResponse.response);
+
+  logger.info(
+    `User of id ${req.user.id} responded to event invitation for event of id ${eventId}`,
+    { eventId, user: req.user },
+    true,
+  );
 
   const messageToSend =
     userResponse.response === "accepted"

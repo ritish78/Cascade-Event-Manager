@@ -66,5 +66,6 @@ export const revokeTokenById = async (tokenId: number): Promise<void> => {
  * @param password      string - hashed password of the provided password
  */
 export const addUser = async (fullName: string, email: string, password: string) => {
-  await db("users").insert({ full_name: fullName, email: email, password: password });
+  //is_verified is set to true for now. Later in our implementation, we would want to send a verification email to the user
+  await db("users").insert({ full_name: fullName, email: email, password: password, is_verified: true });
 };

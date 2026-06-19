@@ -3,6 +3,7 @@ import { ACCESS_TOKEN_COOKIE_OPTIONS, REFRESH_TOKEN_COOKIE_OPTIONS } from "../co
 import { LoginInput, loginSchema, RegisterInput, registerSchema } from "../schema/auth.schema";
 import { loginUser, refreshAccessToken, registerUser, revokeRefreshToken } from "../services/auth.services";
 import { AuthError } from "../utils/error";
+import logger from "src/utils/logger";
 
 /**
  * @openapi
@@ -107,6 +108,7 @@ import { AuthError } from "../utils/error";
  */
 export const loginController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
+    logger.info("Login attempt", { body: req.body }, true);
     const userInput: LoginInput = loginSchema.parse(req.body);
 
     //First, lets see if the user is already logged in and has refreshToken
@@ -119,6 +121,11 @@ export const loginController = async (req: Request, res: Response, next: NextFun
       //need to create new create new Refresh Token. So, catch block clears the
       //cookie and we use loginUser function again to set tokens in cookies
       try {
+        logger.info(
+          "Existing refresh token found in cookies, attempting to refresh access token",
+          { existingRefreshToken },
+          true,
+        );
         const { accessToken, user } = await refreshAccessToken(existingRefreshToken);
 
         res.cookie("accessToken", accessToken, ACCESS_TOKEN_COOKIE_OPTIONS);
@@ -126,18 +133,26 @@ export const loginController = async (req: Request, res: Response, next: NextFun
         res.status(200).send({ message: "Already logged in!", user });
         return;
       } catch (error) {
+        logger.error(
+          "Failed to refresh access token using existing refresh token during login attempt",
+          { existingRefreshToken, error },
+          true,
+        );
         res.clearCookie("accessToken", ACCESS_TOKEN_COOKIE_OPTIONS);
         res.clearCookie("refreshToken", REFRESH_TOKEN_COOKIE_OPTIONS);
       }
     }
 
+    logger.info("Attempting to login user", { email: userInput.email }, true);
     const { accessToken, refreshToken, user } = await loginUser(userInput.email, userInput.password);
 
+    logger.info("Login successful, setting cookies", { user: { id: user.id, email: user.email } }, true);
     res.cookie("accessToken", accessToken, ACCESS_TOKEN_COOKIE_OPTIONS);
     res.cookie("refreshToken", refreshToken, REFRESH_TOKEN_COOKIE_OPTIONS);
 
     res.status(200).send({ message: "Logged in!", user });
   } catch (error) {
+    logger.error("Login attempt failed", { body: req.body, error }, true);
     next(error);
   }
 };
@@ -218,9 +233,11 @@ export const refreshAccessController = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
+    logger.info("Attempting to refresh access token", null, true);
     const refreshToken = req.cookies?.refreshToken;
 
     if (!refreshToken) {
+      logger.error("Refresh token not provided in cookies during access token refresh attempt", null, true);
       throw new AuthError("Refresh token was not provided!");
     }
 
@@ -230,6 +247,7 @@ export const refreshAccessController = async (
 
     res.status(200).send({ message: "Access Token refreshed!", user });
   } catch (error) {
+    logger.error("Failed to refresh access token", { error }, true);
     next(error);
   }
 };
@@ -272,6 +290,7 @@ export const refreshAccessController = async (
  */
 export const logoutController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
+    logger.info("Logout attempt", { user: req.user }, true);
     const refreshToken = req.cookies?.refreshToken;
 
     if (refreshToken) {
@@ -285,6 +304,7 @@ export const logoutController = async (req: Request, res: Response, next: NextFu
 
     res.status(200).send({ message: "Logged out successfully!" });
   } catch (error) {
+    logger.error("Failed to logout user", { user: req.user, error }, true);
     next(error);
   }
 };
@@ -358,12 +378,14 @@ export const logoutController = async (req: Request, res: Response, next: NextFu
  */
 export const registerController = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    logger.info("Registration attempt", { body: req.body }, true);
     const userInput: RegisterInput = registerSchema.parse(req.body);
 
     await registerUser(userInput.fullName, userInput.email, userInput.password, userInput.confirmPassword);
 
     res.status(201).send({ message: "Registered successfully!" });
   } catch (error) {
+    logger.error("Failed to register user", { body: req.body, error }, true);
     next(error);
   }
 };

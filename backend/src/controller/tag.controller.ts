@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { getAllTags } from "../services/tag.services";
+import logger from "src/utils/logger";
 
 /**
  * @openapi
@@ -26,6 +27,7 @@ import { getAllTags } from "../services/tag.services";
  *                 name: "Workshop"
  */
 export const getAllTagsController = async (req: Request, res: Response) => {
+  logger.info("Fetching all tags");
   const tags = await getAllTags();
 
   res.status(200).send(tags);

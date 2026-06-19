@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { getAllCategories } from "../services/category.services";
+import logger from "src/utils/logger";
 
 /**
  * @openapi
@@ -29,6 +30,7 @@ import { getAllCategories } from "../services/category.services";
  *                 description: "Science Fairs, Conference, Seminars and meetups"
  */
 export const getAllCategoriesController = async (req: Request, res: Response) => {
+  logger.info("Fetching all categories");
   const categories = await getAllCategories();
 
   res.status(200).send(categories);
