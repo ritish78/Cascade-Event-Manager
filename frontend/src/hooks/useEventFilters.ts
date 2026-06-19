@@ -19,7 +19,7 @@ export const useEventFilters = () => {
   const updateFilterParam = (key: string, value: string) => {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
-      if (value === "" || value === "all") {
+      if (value === "") {
         next.delete(key);
       } else {
         next.set(key, value);

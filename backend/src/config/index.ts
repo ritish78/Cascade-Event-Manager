@@ -16,7 +16,7 @@ const COOKIE_OPTIONS = {
 
 export const ACCESS_TOKEN_COOKIE_OPTIONS = {
   ...COOKIE_OPTIONS,
-  maxAge: 30 * 60 * 1000,
+  maxAge: 30 * 60 * 1000, //for test, I set the access token expiry to 30 minutes, but in production  we can set it to something like 10 minutes
 };
 
 export const REFRESH_TOKEN_COOKIE_OPTIONS = {
