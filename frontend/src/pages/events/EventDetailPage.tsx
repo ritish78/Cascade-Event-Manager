@@ -178,7 +178,7 @@ const EventDetailPage = () => {
                     <Button
                       variant="primary"
                       className="flex-1"
-                      onClick={() => navigate(`/events${event.eventId}/edit`)}
+                      onClick={() => navigate(`/events/${event.eventId}/edit`)}
                     >
                       Edit Event
                     </Button>

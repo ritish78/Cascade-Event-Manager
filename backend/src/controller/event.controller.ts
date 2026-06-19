@@ -995,7 +995,7 @@ export const getAllEventsOfUserController = async (req: Request, res: Response) 
   const filters: EventFilters = {
     isPrivate: parsedFilters.isPrivate,
     tagIds: parsedFilters.tagIds,
-    createdBy: parsedFilters.createdBy,
+    createdBy: req.user.id,
     categoryId: parsedFilters.categoryId,
     timeframe: parseTimeFrame(parsedFilters.timeframe),
     from: parsedFilters.from,
