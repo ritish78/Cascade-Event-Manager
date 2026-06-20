@@ -1,4 +1,4 @@
-import db from "src/db";
+import db from "../db";
 import {
   Event,
   EventDetails,
@@ -8,8 +8,8 @@ import {
   PaginatedEvents,
 } from "../types/event.types";
 import { Knex } from "knex";
-import { UpdateEventInput } from "src/schema/event.schema";
-import { toEventDTO, toEventRowDTO } from "src/utils/eventDTO";
+import { UpdateEventInput } from "../schema/event.schema";
+import { toEventRowDTO } from "../utils/eventDTO";
 
 type QueryBuilder = Knex.Transaction | Knex;
 

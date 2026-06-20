@@ -8,8 +8,8 @@ services:
     env_file:
       - ./backend/.env.prod
     expose:
-      - 5000
-    command: node dist/index.js
+      - "5000"
+    command: node dist/src/index.js
 
   eventmanagementfrontend:
     build:

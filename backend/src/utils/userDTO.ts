@@ -1,4 +1,4 @@
-import { User, UserDTO } from "src/types/user.types";
+import { User, UserDTO } from "../types/user.types";
 
 export const toUserDTO = (user: User): UserDTO => ({
   id: user.id,

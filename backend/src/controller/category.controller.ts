@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { getAllCategories } from "../services/category.services";
-import logger from "src/utils/logger";
+import logger from "../utils/logger";
 
 /**
  * @openapi

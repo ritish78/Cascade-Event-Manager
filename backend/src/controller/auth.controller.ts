@@ -3,7 +3,7 @@ import { ACCESS_TOKEN_COOKIE_OPTIONS, REFRESH_TOKEN_COOKIE_OPTIONS } from "../co
 import { LoginInput, loginSchema, RegisterInput, registerSchema } from "../schema/auth.schema";
 import { loginUser, refreshAccessToken, registerUser, revokeRefreshToken } from "../services/auth.services";
 import { AuthError } from "../utils/error";
-import logger from "src/utils/logger";
+import logger from "../utils/logger";
 
 /**
  * @openapi

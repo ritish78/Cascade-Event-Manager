@@ -1,5 +1,5 @@
-import db from "src/db";
-import { Category } from "src/types/category.types";
+import db from "../db";
+import { Category } from "../types/category.types";
 
 /**
  * @returns     Caregory[] - we currently have only 4 categories.

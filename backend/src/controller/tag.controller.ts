@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { getAllTags } from "../services/tag.services";
-import logger from "src/utils/logger";
+import logger from "../utils/logger";
 
 /**
  * @openapi

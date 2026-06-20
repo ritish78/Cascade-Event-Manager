@@ -1,5 +1,5 @@
-import db from "src/db";
-import { Tag } from "src/types/tag.types";
+import db from "../db";
+import { Tag } from "../types/tag.types";
 
 /**
  * @returns     Tag[] - all tags in our database. Currently, we only have 12 rows.
