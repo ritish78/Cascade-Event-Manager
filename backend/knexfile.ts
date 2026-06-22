@@ -1,16 +1,16 @@
 import type { Knex } from "knex";
-import { POSTGRES_DATA_URL } from "./src/config";
+import { POSTGRES_DATA_URL, NODE_ENV } from "./src/config";
 
 const knexConfig: { [key: string]: Knex.Config } = {
   development: {
     client: "pg",
     connection: POSTGRES_DATA_URL,
     migrations: {
-      directory: "./src/db/migrations",
+      directory: NODE_ENV === "development" ? "./src/db/migrations" : "./dist/src/db/migrations",
       extension: "ts",
     },
     seeds: {
-      directory: "./src/db/seeds",
+      directory: NODE_ENV === "development" ? "./src/db/seeds" : "./dist/src/db/migrations",
       extension: "ts",
     },
     pool: {
