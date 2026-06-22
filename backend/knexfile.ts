@@ -6,11 +6,11 @@ const knexConfig: { [key: string]: Knex.Config } = {
     client: "pg",
     connection: POSTGRES_DATA_URL,
     migrations: {
-      directory: NODE_ENV === "development" ? "./src/db/migrations" : "./dist/src/db/migrations",
+      directory: "./src/db/migrations",
       extension: "ts",
     },
     seeds: {
-      directory: NODE_ENV === "development" ? "./src/db/seeds" : "./dist/src/db/migrations",
+      directory: "./src/db/seeds",
       extension: "ts",
     },
     pool: {
@@ -22,7 +22,11 @@ const knexConfig: { [key: string]: Knex.Config } = {
     client: "pg",
     connection: POSTGRES_DATA_URL,
     migrations: {
-      directory: "./src/db/migrations",
+      directory: "./dist/src/db/migrations", //i am an idiot. changed the development source in previous commit
+      extension: "ts",
+    },
+    seeds: {
+      directory: "./dist/src/db/seeds",
       extension: "ts",
     },
     pool: {
