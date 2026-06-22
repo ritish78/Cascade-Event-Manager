@@ -211,8 +211,12 @@ const EventDetailPage = () => {
                   Join Event
                 </Button>
               ) : (
-                <Button variant="primary" disabled={rsvpStatus === "loading" || isJoined}>
-                  {user?.id ? "Join Event" : "Login to join"}
+                <Button
+                  variant="primary"
+                  onClick={handleRSVP}
+                  disabled={rsvpStatus === "loading" || isJoined}
+                >
+                  {user?.id ? (rsvpStatus === "loading" ? "Joining..." : "Join Event") : "Login to join"}
                 </Button>
               )}
               {showInviteModal && (
