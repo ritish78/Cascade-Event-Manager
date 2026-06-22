@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import helmet from "helmet";
 import cookies from "cookie-parser";
 import swaggerUiExpress from "swagger-ui-express";
+import cors from "cors";
 import { swaggerSpec } from "./config/swagger";
 
 import { errorHandler } from "./middleware/errorHandler.middleware";
@@ -19,6 +20,12 @@ app.disable("x-powered-by");
 app.use(helmet());
 app.use(express.json());
 app.use(cookies());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL, //i need to config FRONTEND_URL in config/env.ts and config/index.ts as well
+    credentials: true,
+  }),
+);
 
 app.get("/api/v1/ping", (req: Request, res: Response) => {
   return res.status(200).json({ message: "Pong!" });
