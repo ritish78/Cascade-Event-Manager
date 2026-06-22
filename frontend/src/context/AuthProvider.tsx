@@ -3,6 +3,8 @@ import type { User } from "../types/user.types";
 import api from "../api/axios";
 import { AuthContext } from "./AuthContext";
 
+let hasInitializedAuthRefresh = false;
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -10,6 +12,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   //   console.log("User:", { user });
 
   useEffect(() => {
+    if (hasInitializedAuthRefresh) {
+      return;
+    }
+
+    hasInitializedAuthRefresh = true;
+
     const checkAuth = async () => {
       try {
         const res = await api.post("/auth/refresh");
